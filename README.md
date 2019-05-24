@@ -6,6 +6,8 @@ kivy-garden demo flower
 
 A kivy garden flower that shows how to add flowers.
 
+Please see the garden [instructions](https://kivy-garden.github.io) for how to use kivy garden flowers.
+
 Flower information
 -------------------
 
@@ -43,10 +45,4 @@ Please see the [LICENSE.txt](LICENSE.txt) file.
 How to release
 ===============
 
-* update `__version__` in `kivy-garden/flower/__init__.py` to the latest version.
-* update `CHANGELOG.md` and commit the changes
-* call `git tag -a x.y.z -m "Tagging version x.y.z"`
-* call `python setup.py bdist_wheel --universal` and `python setup.py sdist`, which generates the wheel and sdist in the dist/* directory
-* Make sure the dist directory contains the files to be uploaded to pypi and call `twine check dist/*`
-* then call `twine upload dist/*` to upload to pypi.
-* call `git push origin master --tags` to push the latest changes and the tags to github.
+See the garden [instructions](https://kivy-garden.github.io/#makingareleaseforyourflower) for how to make a new release.
