@@ -14,6 +14,9 @@ __version__ = '0.1.0.dev0'
 
 
 class FlowerLabel(Label):
+    """A :class:`~kivy.uix.label.Label` based class that shows
+    The text `"Demo flower"`.
+    """
 
     def __init__(self, **kwargs):
         super(FlowerLabel, self).__init__(**kwargs, text='Demo flower')
