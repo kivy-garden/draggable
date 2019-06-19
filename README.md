@@ -6,6 +6,8 @@ kivy-garden demo flower
 
 A kivy garden flower that shows how to add flowers.
 
+See https://kivy-garden.github.io/flower/ for the rendered flower docs.
+
 Please see the garden [instructions](https://kivy-garden.github.io) for how to use kivy garden flowers.
 
 Flower information
