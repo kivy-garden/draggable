@@ -10,7 +10,7 @@ from kivy.uix.label import Label
 
 __all__ = ('FlowerLabel', )
 
-__version__ = '0.1.0.dev0'
+from ._version import __version__
 
 
 class FlowerLabel(Label):
