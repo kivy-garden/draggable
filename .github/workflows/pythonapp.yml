@@ -66,8 +66,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip virtualenv wheel setuptools
-        python -m pip install -e kivy[win_full] --extra-index-url https://kivy-garden.github.io/simple/
-        python -m pip install -e .[dev,ci] --extra-index-url https://kivy-garden.github.io/simple/
+        python -m pip install kivy[win_full] --extra-index-url https://kivy-garden.github.io/simple/
+    - name: Install flower
+      run: python -m pip install -e .[dev,ci] --extra-index-url https://kivy-garden.github.io/simple/
     - name: Test with pytest
       run: |
         $flower_name=(python -c "print('$GITHUB_REPOSITORY'.split('/')[-1])")
