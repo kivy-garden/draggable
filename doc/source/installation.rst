@@ -20,6 +20,10 @@ Installation
 
 Please see the `garden docs <https://kivy-garden.github.io/>`_ for full installation instructions.
 
+If the flower maintainer has uploaded the flower to
+`pypi <https://pypi.org/>`_, you can just install it with
+`pip install kivy_garden.flower`.
+
 You can install flower master directly from github with::
 
     python -m pip install https://github.com/kivy-garden/flower/archive/master.zip
@@ -41,6 +45,3 @@ don't have to specify it with `--extra-index-url`, add::
 
 to your `pip.conf <https://pip.pypa.io/en/stable/user_guide/#config-file>`_.
 
-If the flower maintainer has uploaded the flower to
-`pypi <https://pypi.org/>`_, you can just install it with
-`pip install kivy_garden.flower`.

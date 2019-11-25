@@ -5,8 +5,6 @@ from setuptools import setup, find_packages
 from io import open
 from os import path
 
-from kivy_garden.flower import __version__
-
 here = path.abspath(path.dirname(__file__))
 
 filename = path.join(here, 'kivy_garden', 'flower', '_version.py')
@@ -38,14 +36,16 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     keywords='Kivy kivy-garden',
 
-    packages=['kivy_garden.flower'],
+    packages=find_packages(),
     install_requires=[],
     extras_require={
-        'dev': ['pytest>=3.6', 'wheel', 'pytest-cov', 'pycodestyle'],
-        'travis': ['coveralls'],
+        'dev': ['pytest>=3.6', 'pytest-cov', 'pytest-asyncio',
+                'sphinx_rtd_theme'],
+        'ci': ['coveralls', 'pycodestyle'],
     },
     package_data={},
     data_files=[],
