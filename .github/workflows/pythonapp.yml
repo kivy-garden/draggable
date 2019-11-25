@@ -51,7 +51,7 @@ jobs:
     - name: Test with pytest
       run: |
         flower_name=$(python3 -c "print('$GITHUB_REPOSITORY'.split('/')[-1])")
-        python3 -m pytest --cov=kivy_garden.$flower_name --cov-report term --cov-branch tests
+        python3 -m pytest --cov=kivy_garden.$flower_name --cov-report term --cov-branch
 
   windows_test:
     runs-on: windows-latest
@@ -71,7 +71,7 @@ jobs:
     - name: Test with pytest
       run: |
         $flower_name=(python -c "print('$GITHUB_REPOSITORY'.split('/')[-1])")
-        python -m pytest --cov=kivy_garden.$flower_name --cov-report term --cov-branch tests
+        python -m pytest --cov=kivy_garden.$flower_name --cov-report term --cov-branch
 
   docs:
     runs-on: ubuntu-18.04
