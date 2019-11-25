@@ -1,8 +1,7 @@
 kivy-garden demo flower
 ========================
 
-[![Coverage Status](https://coveralls.io/repos/github/kivy-garden/flower/badge.svg?branch=master)](https://coveralls.io/github/kivy-garden/flower?branch=master)
-[![Build Status](https://travis-ci.com/kivy-garden/flower.svg?branch=master)](https://travis-ci.com/kivy-garden/flower)
+[![Github Build Status](https://github.com/kivy-garden/flower/workflows/Garden%20flower/badge.svg)](https://github.com/kivy-garden/flower/actions)
 
 A kivy garden flower that shows how to add flowers.
 
@@ -10,23 +9,13 @@ See https://kivy-garden.github.io/flower/ for the rendered flower docs.
 
 Please see the garden [instructions](https://kivy-garden.github.io) for how to use kivy garden flowers.
 
-Flower information
--------------------
+CI
+--
 
-A kivy garden flower demo.
+Every push or pull request run the [GitHub Action](https://github.com/kivy-garden/flower/actions) CI.
+It tests the code on various OS and also generates wheels that can be released on PyPI upon a
+tag. Docs are also generated and uploaded to the repo as well as artifacts of the CI.
 
-Install
----------
-
-```sh
-pip install kivy_garden.flower
-```
-
-#### Usage
-
-```py
-do_something
-```
 
 TODO
 -------
