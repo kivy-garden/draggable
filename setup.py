@@ -1,6 +1,6 @@
 """See README.md for package documentation."""
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 from io import open
 from os import path
@@ -40,7 +40,7 @@ setup(
     ],
     keywords='Kivy kivy-garden',
 
-    packages=find_packages(),
+    packages=find_namespace_packages(include=['kivy_garden.*']),
     install_requires=[],
     extras_require={
         'dev': ['pytest>=3.6', 'pytest-cov', 'pytest-asyncio',
