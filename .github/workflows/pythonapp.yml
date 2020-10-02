@@ -16,7 +16,7 @@ jobs:
     - name: Lint with pycodestyle
       run: |
         python3 -m pip install flake8
-        python3 -m flake8 . --count --ignore=E125,E126,E127,E128,E402,E741,E731,W503,F401,W504,F841 --show-source --statistics --max-line-length=80 --exclude=__pycache__,.tox,.git/,doc/
+        python3 -m flake8 . --count --show-source --statistics
 
   linux_test:
     runs-on: ubuntu-18.04
