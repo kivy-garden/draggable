@@ -1,26 +1,18 @@
-kivy-garden demo flower
-========================
+Draggable
+=========
 
-[![Github Build Status](https://github.com/kivy-garden/flower/workflows/Garden%20flower/badge.svg)](https://github.com/kivy-garden/flower/actions)
+[![Github Build Status](https://github.com/kivy-garden/draggable/workflows/Garden%20flower/badge.svg)](https://github.com/kivy-garden/draggable/actions)
 
-A kivy garden flower that shows how to add flowers.
+A kivy garden flower that provides a drag & drop functionality.
+Inspired by [drag_n_drop](https://github.com/kivy-garden/drag_n_drop) and [Flutter](https://api.flutter.dev/flutter/widgets/Draggable-class.html).
 
-See https://kivy-garden.github.io/flower/ for the rendered flower docs.
+See https://kivy-garden.github.io/draggable/ for the rendered draggable docs.
 
 Please see the garden [instructions](https://kivy-garden.github.io) for how to use kivy garden flowers.
 
-CI
---
+[jp doc](https://qiita.com/gotta_dive_into_python/private/b7957650b64a89783ea0)  
+[![Draggable flower](http://img.youtube.com/vi/PVet-_s8VFI/0.jpg)](https://www.youtube.com/watch?v=PVet-_s8VFI)
 
-Every push or pull request run the [GitHub Action](https://github.com/kivy-garden/flower/actions) CI.
-It tests the code on various OS and also generates wheels that can be released on PyPI upon a
-tag. Docs are also generated and uploaded to the repo as well as artifacts of the CI.
-
-
-TODO
--------
-
-* add your code
 
 Contributing
 --------------

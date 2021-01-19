@@ -8,4 +8,4 @@ Examples
 Basic Example
 -------------
 
-Add your examples here
+.. literalinclude:: ../../../examples/draggable_can_work_with_scrollview.py

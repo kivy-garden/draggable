@@ -16,9 +16,9 @@ import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
-project = 'Flower'
-copyright = '2019, Kivy'
-author = 'Kivy'
+project = 'Draggable'
+copyright = '2021, Nattōsai Mitō'
+author = 'Nattōsai Mitō'
 
 
 # -- General configuration ---------------------------------------------------

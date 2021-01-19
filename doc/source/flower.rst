@@ -1,13 +1,13 @@
 .. _flower-api:
 
-******
-Flower
-******
+*********
+Draggable
+*********
 
-:mod:`kivy_garden.flower`
-=============================
+:mod:`kivy_garden.draggable`
+===============================
 
-.. automodule:: kivy_garden.flower
+.. automodule:: kivy_garden.draggable
    :members:
    :undoc-members:
    :show-inheritance:
