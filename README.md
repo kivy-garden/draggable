@@ -10,9 +10,8 @@ See https://kivy-garden.github.io/draggable/ for the rendered draggable docs.
 
 Please see the garden [instructions](https://kivy-garden.github.io) for how to use kivy garden flowers.
 
-[jp doc](https://qiita.com/gotta_dive_into_python/private/b7957650b64a89783ea0)  
-[![Draggable flower](http://img.youtube.com/vi/PVet-_s8VFI/0.jpg)](https://www.youtube.com/watch?v=PVet-_s8VFI)
-
+[japanese documentation](https://qiita.com/gotta_dive_into_python/private/b7957650b64a89783ea0)  
+[Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGiepWKfP43Dh7IWqn3cQtpQ)
 
 Contributing
 --------------

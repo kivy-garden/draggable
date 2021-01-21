@@ -12,10 +12,9 @@ Supported versions
 Dependencies
 ------------
 
-* asynckivy
-* asyncgui
-
 #. `Kivy <https://kivy.org/#download>`_
+#. asynckivy
+#. asyncgui
 
 
 Installation
