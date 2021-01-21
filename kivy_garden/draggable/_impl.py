@@ -4,7 +4,7 @@ __all__ = (
 )
 from typing import Tuple, Union, Iterator
 from contextlib import contextmanager
-from inspect import isawaitable
+from inspect import isawaitable, getcoroutinestate, CORO_RUNNING
 from dataclasses import dataclass
 
 from kivy.config import Config
@@ -88,7 +88,11 @@ class KXDraggableBehavior:
         return self._drag_ctx
 
     def drag_cancel(self, *args):
-        self._drag_task.cancel()
+        '''Cancels drag. Might be delayed depending on the internal state.'''
+        if getcoroutinestate(self._drag_task.root_coro) == CORO_RUNNING:
+            Clock.schedule_once(self.drag_cancel, -1)
+        else:
+            self._drag_task.cancel()
 
     def __init__(self, **kwargs):
         self._drag_ctx = None
