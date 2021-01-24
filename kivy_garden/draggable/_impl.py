@@ -14,7 +14,7 @@ from kivy.properties import (
 from kivy.clock import Clock
 from kivy.factory import Factory
 from kivy.uix.widget import Widget
-from asyncgui.exceptions import InvalidStateError
+from asynckivy import InvalidStateError
 import asynckivy as ak
 
 from ._utils import (

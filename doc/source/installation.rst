@@ -14,7 +14,6 @@ Dependencies
 
 #. `Kivy <https://kivy.org/#download>`_
 #. asynckivy
-#. asyncgui
 
 
 Installation
