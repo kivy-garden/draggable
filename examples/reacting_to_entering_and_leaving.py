@@ -105,14 +105,10 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
         return super().on_touch_move(touch)
 
     async def _watch_touch(self, touch):
-        tasks = await ak.or_(
+        await ak.or_(
             self._watch_touch_movement(touch),
             ak.event(touch.ud['kivyx_draggable'], 'is_being_dragged'),
         )
-        if tasks[0].done:
-            tasks[1].cancel()
-        else:
-            tasks[0].cancel()
 
     async def _watch_touch_movement(self, touch):
         draggable = touch.ud['kivyx_draggable']

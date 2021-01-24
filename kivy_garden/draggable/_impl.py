@@ -4,7 +4,7 @@ __all__ = (
 )
 from typing import Tuple, Union, Iterator
 from contextlib import contextmanager
-from inspect import isawaitable, getcoroutinestate, CORO_RUNNING
+from inspect import isawaitable
 from dataclasses import dataclass
 
 from kivy.config import Config
@@ -87,12 +87,13 @@ class KXDraggableBehavior:
     def drag_context(self) -> Union[None, DragContext]:
         return self._drag_ctx
 
-    def drag_cancel(self, *args):
+    def drag_cancel(self):
         '''Cancels drag. Might be delayed depending on the internal state.'''
-        if getcoroutinestate(self._drag_task.root_coro) == CORO_RUNNING:
-            Clock.schedule_once(self.drag_cancel, -1)
+        task = self._drag_task
+        if task.is_cancellable:
+            task.cancel()
         else:
-            self._drag_task.cancel()
+            ak.close_soon(task)
 
     def __init__(self, **kwargs):
         self._drag_ctx = None
@@ -128,7 +129,6 @@ class KXDraggableBehavior:
         )
         if tasks[0].done:
             # The given touch is a dragging gesture.
-            tasks[1].cancel()
             if self.is_being_dragged or (not self.drag_enabled):
                 ak.start(self._simulate_a_normal_touch(
                     touch, do_transform=True))
@@ -139,7 +139,6 @@ class KXDraggableBehavior:
                 ak.start(self._drag_task)
         else:
             # The given touch is not a dragging gesture.
-            tasks[0].cancel()
             ak.start(self._simulate_a_normal_touch(
                 touch, do_touch_up=tasks[1].result))
 
@@ -383,14 +382,10 @@ class KXReorderableBehavior:
         return super().on_touch_move(touch)
 
     async def _watch_touch(self, touch):
-        tasks = await ak.or_(
+        await ak.or_(
             self._watch_touch_movement(touch),
             ak.event(touch.ud['kivyx_draggable'], 'is_being_dragged'),
         )
-        if tasks[0].done:
-            tasks[1].cancel()
-        else:
-            tasks[0].cancel()
 
     async def _watch_touch_movement(self, touch):
         spacer = self._inactive_spacers.pop()
