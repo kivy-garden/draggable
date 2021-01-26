@@ -10,7 +10,7 @@ kivy-garden-draggable = {editable = true,path = "."}
 
 [packages]
 kivy = {extras = ["base"],version = "*"}
-asynckivy = "<0.4,>=0.3"
+asynckivy = ">=0.3,<0.5"
 
 [requires]
 python_version = "3.7"

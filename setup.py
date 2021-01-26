@@ -40,7 +40,7 @@ setup(
     keywords='Kivy kivy-garden',
 
     packages=find_namespace_packages(include=['kivy_garden.*']),
-    install_requires=['asynckivy>=0.3,<0.4'],
+    install_requires=['asynckivy>=0.3,<0.5'],
     extras_require={
         'dev': ['pytest>=3.6', 'pytest-cov', 'pytest-asyncio',
                 'sphinx_rtd_theme'],
