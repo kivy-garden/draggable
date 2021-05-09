@@ -88,12 +88,8 @@ class KXDraggableBehavior:
         return self._drag_ctx
 
     def drag_cancel(self):
-        '''Cancels drag. Might be delayed depending on the internal state.'''
-        task = self._drag_task
-        if task.is_cancellable:
-            task.cancel()
-        else:
-            ak.close_soon(task)
+        '''Cancels drag as soon as possible'''
+        self._drag_task.cancel()
 
     def __init__(self, **kwargs):
         self._drag_ctx = None
