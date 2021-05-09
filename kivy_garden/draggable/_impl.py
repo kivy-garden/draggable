@@ -53,6 +53,7 @@ class DragContext:
 class KXDraggableBehavior:
     __events__ = (
         'on_drag_start', 'on_drag_end', 'on_drag_success', 'on_drag_fail',
+        'on_drag_cancel',
     )
 
     drag_cls = StringProperty()
@@ -206,6 +207,7 @@ class KXDraggableBehavior:
                 await ak.sleep(-1)
         except GeneratorExit:
             ctx.cancelled = True
+            self.dispatch('on_drag_cancel', touch)
             raise
         finally:
             self.dispatch('on_drag_end', touch)
@@ -277,6 +279,9 @@ class KXDraggableBehavior:
             y=ctx.original_pos_win[1],
         )
         restore_widget_location(self, ctx.original_location)
+
+    def on_drag_cancel(self, touch):
+        pass
 
 
 class KXDroppableBehavior:
