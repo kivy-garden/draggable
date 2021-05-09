@@ -49,10 +49,7 @@ BoxLayout:
         size_hint_y: None
         height: self.minimum_height
         MyButton:
-            text: 'dispose all draggables currently being dragged'
-            on_press: app.dispose_ongoing_drags()
-        MyButton:
-            text: 'cancel all drags'
+            text: 'cancel all ongoing drags'
             on_press: app.cancel_ongoing_drags()
 '''
 
@@ -67,16 +64,15 @@ class SampleApp(App):
         for i in range(23):
             gl.add_widget(DraggableItem(text=str(i)))
 
-    def dispose_ongoing_drags(self):
-        for draggable in tuple(KXDraggableBehavior.ongoing_drags()):
-            draggable.drag_cancel()
-            draggable.parent.remove_widget(draggable)
-
     def cancel_ongoing_drags(self):
+        # The tuple here is needed for the same reason as you need to
+        # duplicate 'children' in the code below.
+        #
+        # for c in widget.children[:]:
+        #     widget.remove_widget(c)
+        #
         for draggable in tuple(KXDraggableBehavior.ongoing_drags()):
-            original_location = draggable.drag_context.original_location
             draggable.drag_cancel()
-            restore_widget_location(draggable, original_location)
 
 
 if __name__ == '__main__':

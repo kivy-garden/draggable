@@ -281,7 +281,7 @@ class KXDraggableBehavior:
         restore_widget_location(self, ctx.original_location)
 
     def on_drag_cancel(self, touch):
-        pass
+        restore_widget_location(self, self._drag_ctx.original_location)
 
 
 class KXDroppableBehavior:
