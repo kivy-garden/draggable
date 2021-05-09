@@ -198,11 +198,12 @@ class KXDraggableBehavior:
                 not droppable.accepts_drag(touch, self)
             r = self.dispatch(
                 'on_drag_fail' if failed else 'on_drag_success', touch)
-            if isawaitable(r):
-                await r
-            # I cannot remember why this 'ak.sleep()' exists.
-            # It might be unnecessary.
-            await ak.sleep(-1)
+            async with ak.cancel_protection():
+                if isawaitable(r):
+                    await r
+                # I cannot remember why this 'ak.sleep()' exists.
+                # It might be unnecessary.
+                await ak.sleep(-1)
         except GeneratorExit:
             ctx.cancelled = True
             raise
