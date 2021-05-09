@@ -46,8 +46,17 @@ class DragContext:
         = None
     '''(read-only) The widget where the draggable dropped to.'''
 
-    cancelled: bool = False
-    '''(read-only) Whether the drag was cancelled or not.'''
+    state: str = 'started'
+    '''(read-only) The current state of the drag. One of the following:
+    'started', 'succeeded', 'failed' or 'cancelled'.
+    '''
+
+    @property
+    def cancelled(self) -> bool:
+        return self.state == 'cancelled'
+    '''This property exists just for backward compatibility.
+    Use ``state`` instead.
+    '''
 
 
 class KXDraggableBehavior:
@@ -195,10 +204,12 @@ class KXDraggableBehavior:
             await ak.sleep(-1)
 
             ctx.droppable = droppable = touch_ud.get('kivyx_droppable', None)
-            failed = droppable is None or \
-                not droppable.accepts_drag(touch, self)
-            r = self.dispatch(
-                'on_drag_fail' if failed else 'on_drag_success', touch)
+            if droppable is None or (not droppable.accepts_drag(touch, self)):
+                ctx.state = 'failed'
+                r = self.dispatch('on_drag_fail', touch)
+            else:
+                ctx.state = 'succeeded'
+                r = self.dispatch('on_drag_success', touch)
             async with ak.cancel_protection():
                 if isawaitable(r):
                     await r
@@ -206,7 +217,7 @@ class KXDraggableBehavior:
                 # It might be unnecessary.
                 await ak.sleep(-1)
         except GeneratorExit:
-            ctx.cancelled = True
+            ctx.state = 'cancelled'
             self.dispatch('on_drag_cancel', touch)
             raise
         finally:
