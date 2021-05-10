@@ -18,7 +18,7 @@ from asynckivy import InvalidStateError
 import asynckivy as ak
 
 from ._utils import (
-    temp_transform, temp_grab_current,
+    temp_transform, temp_grab_current, _create_spacer,
     save_widget_location, restore_widget_location,
 )
 
@@ -325,21 +325,11 @@ class KXReorderableBehavior:
 
     @classmethod
     def create_spacer(cls, **kwargs):
-        from kivy.utils import rgba
-        from kivy.graphics import Color, Rectangle
-        spacer = Widget(size_hint_min=('50dp', '50dp'))
-        with spacer.canvas:
-            color = kwargs.get('color', None)
-            if color is None:
-                color_inst = Color(.2, .2, .2, .7)
-            else:
-                color_inst = Color(*rgba(color))
-            rect_inst = Rectangle(size=spacer.size)
-        spacer.bind(
-            pos=lambda __, value: setattr(rect_inst, 'pos', value),
-            size=lambda __, value: setattr(rect_inst, 'size', value),
-        )
-        return spacer
+        import warnings
+        warnings.warn(
+            r"KXReorderableBehavior.create_spacer() is deprecated, "
+            r"and will be removed in the future.")
+        return _create_spacer(**kwargs)
 
     def __init__(self, **kwargs):
         self._active_spacers = []
@@ -354,7 +344,7 @@ class KXReorderableBehavior:
 
     def _init_spacers(self, dt):
         if self._inactive_spacers is None:
-            self.spacer_widgets.append(self.create_spacer())
+            self.spacer_widgets.append(_create_spacer())
 
     def on_spacer_widgets(self, __, spacer_widgets):
         if self._active_spacers:

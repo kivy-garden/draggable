@@ -53,6 +53,8 @@ class Magnet(Factory.Widget):
 
 
 KV_CODE = '''
+#:import create_spacer kivy_garden.draggable._utils._create_spacer
+
 <ReorderableGridLayout@KXReorderableBehavior+GridLayout>:
 <DraggableItem@KXDraggableBehavior+Magnet>:
     do_anim: not self.is_being_dragged
@@ -85,7 +87,7 @@ ReorderableGridLayout:
     drag_classes: ['test', ]
     cols: 6
     spacer_widgets:
-        [self.create_spacer(color=color)
+        [create_spacer(color=color)
         for color in "#000044 #002200 #440000".split()]
 '''
 

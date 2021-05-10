@@ -69,3 +69,23 @@ def restore_widget_location(widget, location: dict, *, ignore_parent=False):
     if parent is None:
         return
     parent.add_widget(w, index=location['index'])
+
+
+def _create_spacer(**kwargs):
+    '''(internal)'''
+    from kivy.uix.widget import Widget
+    from kivy.utils import rgba
+    from kivy.graphics import Color, Rectangle
+    spacer = Widget(size_hint_min=('50dp', '50dp'))
+    with spacer.canvas:
+        color = kwargs.get('color', None)
+        if color is None:
+            color_inst = Color(.2, .2, .2, .7)
+        else:
+            color_inst = Color(*rgba(color))
+        rect_inst = Rectangle(size=spacer.size)
+    spacer.bind(
+        pos=lambda __, value: setattr(rect_inst, 'pos', value),
+        size=lambda __, value: setattr(rect_inst, 'size', value),
+    )
+    return spacer
