@@ -1,3 +1,24 @@
+'''
+notes for maintainers
+---------------------
+
+KXDraggableBehaviorがTaskを作る際に
+
+.. code-block::
+
+   self._drag_task = ak.start(Task(...))
+
+ではなく
+
+.. code-block::
+
+   self._drag_task = ak.Task(...)
+   ak.start(self._drag_task)
+
+としているのは、前者だと ``on_drag_start`` event 時にdraggable.cancel()が呼ばれると
+代入前の古い ``self._drag_task`` への操作になってしまう為。
+'''
+
 __all__ = (
     'KXDraggableBehavior', 'KXDroppableBehavior', 'KXReorderableBehavior',
     'save_widget_location', 'restore_widget_location', 'DragContext',
@@ -14,7 +35,6 @@ from kivy.properties import (
 from kivy.clock import Clock
 from kivy.factory import Factory
 from kivy.uix.widget import Widget
-from asynckivy import InvalidStateError
 import asynckivy as ak
 
 from ._utils import (
@@ -348,7 +368,7 @@ class KXReorderableBehavior:
 
     def on_spacer_widgets(self, __, spacer_widgets):
         if self._active_spacers:
-            raise InvalidStateError(
+            raise ak.InvalidStateError(
                 "Do not change the 'spacer_widgets' when there is an ongoing"
                 " drag.")
         self._inactive_spacers = [w.__self__ for w in spacer_widgets]
@@ -381,16 +401,17 @@ class KXReorderableBehavior:
             if drag_cls is not None:
                 touch_ud[ud_key] = None
                 if drag_cls in self.drag_classes:
-                    ak.start(self._watch_touch(touch))
+                    # Watches 'is_being_dragged' as well, so that the
+                    # '_watch_touch()' will be automatically cancelled when
+                    # the drag is cancelled.
+                    ak.start(ak.or_(
+                        self._watch_touch(touch),
+                        ak.event(
+                            touch.ud['kivyx_draggable'], 'is_being_dragged'),
+                    ))
         return super().on_touch_move(touch)
 
     async def _watch_touch(self, touch):
-        await ak.or_(
-            self._watch_touch_movement(touch),
-            ak.event(touch.ud['kivyx_draggable'], 'is_being_dragged'),
-        )
-
-    async def _watch_touch_movement(self, touch):
         spacer = self._inactive_spacers.pop()
         self._active_spacers.append(spacer)
 

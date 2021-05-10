@@ -101,16 +101,17 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
             if drag_cls is not None:
                 touch_ud[ud_key] = None
                 if drag_cls in self.drag_classes:
-                    ak.start(self._watch_touch(touch))
+                    # Watches 'is_being_dragged' as well, so that the
+                    # '_watch_touch()' will be automatically cancelled when
+                    # the drag is cancelled.
+                    ak.start(ak.or_(
+                        self._watch_touch(touch),
+                        ak.event(
+                            touch.ud['kivyx_draggable'], 'is_being_dragged'),
+                    ))
         return super().on_touch_move(touch)
 
     async def _watch_touch(self, touch):
-        await ak.or_(
-            self._watch_touch_movement(touch),
-            ak.event(touch.ud['kivyx_draggable'], 'is_being_dragged'),
-        )
-
-    async def _watch_touch_movement(self, touch):
         draggable = touch.ud['kivyx_draggable']
         collide_point = self.collide_point
 
