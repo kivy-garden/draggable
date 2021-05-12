@@ -68,7 +68,14 @@ def restore_widget_location(widget, location: dict, *, ignore_parent=False):
         w.parent.remove_widget(w)
     if parent is None:
         return
-    parent.add_widget(w, index=location['index'])
+
+    # 'Window.add_widget()' doesn't take 'index' so we need to check if the
+    # 'parent' is Window or not. The way to do it here is weird, and I'm not
+    # sure this is correct or not.
+    if parent.parent is parent:
+        parent.add_widget(w)
+    else:
+        parent.add_widget(w, index=location['index'])
 
 
 def _create_spacer(**kwargs):
