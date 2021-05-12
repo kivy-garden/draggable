@@ -179,14 +179,36 @@ class KXDraggableBehavior:
                 return False
         return True
 
-    async def _treat_a_touch_as_a_drag(self, touch, *, do_transform=False):
+    def drag_start_from_other_widget(self, drag_from: Widget, touch):
+        '''
+        Start dragging as if the draggable existed where ``drag_from`` was.
+
+        * Sizing/Positioning properties will be overwritten by ``drag_from``'s.
+        * The draggable shouldn't have a parent.
+        * This method should be called from ``drag_from``'s touch events.
+        '''
+        if self.parent is not None:
+            raise ak.InvalidStateError("Draggable shouldn't have a parent")
+        if touch.time_end != -1:
+            return
+        touch.ud[self.__ud_key] = None
+        self._drag_task = ak.Task(
+            self._treat_a_touch_as_a_drag(touch, drag_from=drag_from))
+        ak.start(self._drag_task)
+
+    async def _treat_a_touch_as_a_drag(
+            self, touch, *, do_transform=False, drag_from=None):
+        if drag_from is None:
+            drag_from = self
         self.is_being_dragged = True
         try:
             # NOTE: I don't know the difference from 'get_root_window()'
-            window = self.get_parent_window()
+            window = drag_from.get_parent_window()
             touch_ud = touch.ud
-            original_pos_win = self.to_window(*self.pos)
-            original_location = save_widget_location(self)
+            original_pos_win = drag_from.to_window(*drag_from.pos)
+            original_location = save_widget_location(
+                drag_from, ignore_parent=(drag_from is not self))
+            original_location.setdefault('weak_parent', None)
             self._drag_ctx = ctx = DragContext(
                 original_pos_win=original_pos_win,
                 original_location=original_location,
@@ -194,14 +216,18 @@ class KXDraggableBehavior:
 
             if do_transform:
                 touch.push()
-                touch.apply_transform_2d(self.parent.to_widget)
-            offset_x = touch.ox - self.x
-            offset_y = touch.oy - self.y
+                touch.apply_transform_2d(drag_from.parent.to_widget)
+            offset_x = touch.ox - drag_from.x
+            offset_y = touch.oy - drag_from.y
             if do_transform:
                 touch.pop()
 
             # move self under the Window
-            self.parent.remove_widget(self)
+            if self.parent is None:  # more like (drag_from is not self)
+                restore_widget_location(
+                    self, original_location, ignore_parent=True)
+            else:
+                self.parent.remove_widget(self)
             self.size_hint = (None, None, )
             self.pos_hint = {}
             self.pos = (
