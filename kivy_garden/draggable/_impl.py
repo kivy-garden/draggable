@@ -93,6 +93,9 @@ class KXDraggableBehavior:
     drag_timeout = NumericProperty(_scroll_timeout)
 
     drag_enabled = BooleanProperty(True)
+    '''Indicates whether this draggable can be dragged or not. Changing this
+    doesn't affect ongoing drag.
+    '''
 
     is_being_dragged = BooleanProperty(False)
     '''(read-only)'''
@@ -118,7 +121,9 @@ class KXDraggableBehavior:
         return self._drag_ctx
 
     def drag_cancel(self):
-        '''Cancels drag as soon as possible'''
+        '''Cancels drag as soon as possible. Does nothing if the draggable is
+        not being dragged
+        '''
         self._drag_task.cancel()
 
     def __init__(self, **kwargs):
@@ -181,7 +186,7 @@ class KXDraggableBehavior:
 
     def drag_start_from_other_widget(self, drag_from: Widget, touch):
         '''
-        Start dragging as if the draggable existed where ``drag_from`` was.
+        Starts dragging as if the draggable existed where ``drag_from`` is.
 
         * Sizing/Positioning properties will be overwritten by ``drag_from``'s.
         * The draggable shouldn't have a parent.

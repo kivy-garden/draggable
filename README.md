@@ -1,15 +1,14 @@
 # Draggable
 
-[![](http://img.youtube.com/vi/CjiRZjiSqgA/0.jpg)][youtube]
+![](http://img.youtube.com/vi/CjiRZjiSqgA/0.jpg)
+[Youtube][youtube]
 
 Inspired by:
 
 * [drag_n_drop][drag_n_drop]
 * [Flutter][flutter]
 
-(This flower is based on drag_n_drop, so reading its documentation may help
-you understanding this one. And if you can read Japanese, [this][jpdoc] also
-may help you.)
+(This flower is based on drag_n_drop, so please read its documentation prior to this one. And if you can read Japanese, [this][jpdoc] may help you.)
 
 This flower adds a drag and drop functionality to layouts and widgets. There are 3
 main components used to have drag and drop:
@@ -20,43 +19,115 @@ main components used to have drag and drop:
   `DraggableLayoutBehavior`.
 - The `KXDroppableBehavior`. An equivalent of Flutter's `DragTarget`.
 
+From now on, I use the term `droppable` to refer both `KXReorderableBehavior` and `KXDroppableBehavior`, and use the term `draggable` to refer `KXDraggableBehavior`.
+
 ## Main differences from drag_n_drop
 
 - Drag is triggered by a long-press. More precisely, when a finger of the user
-  touched inside of a draggable widget, if the finger stays for `drag_timeout`
-  milli seconds without traveling more than `drag_distance` pixels, it will
+  dropped inside a draggable, if the finger stays for `draggable.drag_timeout`
+  milli seconds without traveling more than `draggable.drag_distance` pixels, it will
   be recognized as a dragging gesture.
-- `KXReorderableBehavior` can handle multiple drags simultaneously.
-- Drag can be cancelled by calling `KXDraggableBehavior.drag_cancel()`.
+- Droppables can handle multiple drags simultaneously.
+- Drag can be cancelled by calling `draggable.drag_cancel()`.
 - Nested `KXReorderableBehavior` is not officially supported. It may or may
   not work depending on how `drag_classes` and `drag_cls` are set.
 
-## Detail
+## Flow
 
-### Flow
-
-Once a drag has started, it will pass one of the following three paths:
+Once a drag has started, it will go through the following path.
 
 ![](doc/source/images/drag_flowchart.png)
 
-- If the draggable gets dropped to a droppable(widget that inherits from
-  either `KXDroppableBehavior` or `KXReorderableBehavior`), and gets
-  accepted by it, the draggable will fire **on_drag_success** event. And
-  `KXDraggableBehavior.drag_context.droppable` will be set to the droppable.
-- If the draggable gets dropped to a non-droppable, the draggable will fire
-  **on_drag_fail** event. And `KXDraggableBehavior.drag_context.droppable`
-  will be None.
-- If the draggable gets dropped to a droppable, but the `draggable.drag_cls`
-  is not listed in the `droppable.drag_classes`, the draggable will fire
-  **on_drag_fail** event. And `KXDraggableBehavior.drag_context.droppable`
-  will be None.
-- If the draggable gets dropped to a droppable, and gets denied by it,
-  the draggable will fire **on_drag_fail** event. And
-  `KXDraggableBehavior.drag_context.droppable` will be set to the draggable.
-  ("gets denied" means `droppable.accepts_drag()` returned False)
-- If `draggable.drag_canel()` is called before the user lift off his/her
-  finger, neither of **on_drag_fail** nor **on_drag_success** will be fired.
-  And `KXDraggableBehavior.drag_context.cancelled` will be set to True.
+## Cancellation
+
+When your app switches a scene, you may want to cancel the all ongoing drags.
+`KXDraggableBehavior.ongoing_drags()` and `draggable.drag_cancel()` are what you want.
+
+```python
+def cancel_all_ongoing_drags():
+    for draggable in tuple(KXDraggableBehavior.ongoing_drags()):
+        draggable.drag_cancel()
+```
+
+## Using other widgets as an emitter
+
+Let's say you are creating a card game, and there is a deck on the screen.
+Say, you want the deck to emit a card when the user drops a finger on it,
+and want the card to follow the finger until the user lifts it up.
+This means a widget who triggers a drag and a widget who gets dragged are
+different.
+You can implement this functionality as follows:
+
+```python
+class Card(KXDraggableBehavior, Widget):
+    pass
+
+
+class Deck(Widget):
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.opos) and (not touch.is_mouse_scrolling):
+            Card(...).drag_start_from_other_widget(self, touch)
+```
+
+## Customization
+
+What draggables do `on_drag_success` / `on_drag_fail` / `on_drag_cancel` are completely customizable.
+For example, by default, when a drag fails, the draggable will go back to where it came from with little animation. This is because the default handler of `on_drag_fail` is implemented as follows:
+
+```python
+class KXDraggableBehavior:
+    async def on_drag_fail(self, touch):
+        ctx = self.drag_context
+        await ak.animate(
+            self, d=.1,
+            x=ctx.original_pos_win[0],
+            y=ctx.original_pos_win[1],
+        )
+        restore_widget_location(self, ctx.original_location)
+```
+
+If you don't need the animation, and want the draggable to go back instantly, overwrite the handler as follows:
+
+```python
+class YourOne(...):
+    def on_drag_fail(self, touch):
+        restore_widget_location(self, self.drag_context.original_location)
+```
+
+Or if you want the draggable to not go back, and want it to stay the current position, overwrite the handler as follows:
+
+```python
+class YourOne(...):
+    def on_drag_fail(self, touch):
+        pass
+```
+
+Another example: when a drag succeed, the draggable will become a child of droppable, by default.
+If you don't like it, and want the draggable to fade-out,
+overwrite the handler as follows:
+
+```python
+class YourOne(...):
+    async def on_drag_success(self, touch):
+        import asynckivy
+        await asynckivy.animate(self, opacity=0)
+        self.parent.remove_widget(self)
+```
+
+Just like that, you have free rein to change those behaviors.
+But note that **only the default handler of `on_drag_success` and `on_drag_fail`
+can be an async function. Those two only.**
+
+You might say "What's the point of making a default handler into an async function,
+when you can just launch any number of tasks from regular functions by using ``asynckivy.start()``?".
+Well, if you use ``asynckivy.start()``, that task will be completely isolated from the dragging process,
+which means the draggable may fire ``on_drag_end`` and becomes able to start another drag while the task is still running.
+If you make default handlers into async functions,
+its code is a part of dragging process and is guaranteed to be finished before ``on_drag_end`` gets fired.
+
+To summarize, if you have asynchronous code that has to be a part of the dragging process,
+make a default handler into an async function.
+Otherwise, you shouldn't do that.
 
 ## License
 

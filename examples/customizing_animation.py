@@ -1,5 +1,5 @@
 '''This example shows how to customize animations by overwriting
-``on_drag_fail()`` and ``on_drag_succes()``.
+``on_drag_fail()`` and ``on_drag_success()``.
 '''
 
 
