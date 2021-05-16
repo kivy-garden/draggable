@@ -1,14 +1,15 @@
 # Draggable
 
-![](http://img.youtube.com/vi/CjiRZjiSqgA/0.jpg)
-[Youtube][youtube]
+![](http://img.youtube.com/vi/CjiRZjiSqgA/0.jpg)  
+[Youtube][youtube]  
+[README(Japanese)](README_jp.md)  
 
 Inspired by:
 
 * [drag_n_drop][drag_n_drop]
 * [Flutter][flutter]
 
-(This flower is based on drag_n_drop, so please read its documentation prior to this one. And if you can read Japanese, [this][jpdoc] may help you.)
+(This flower is based on drag_n_drop, so please read its documentation prior to this one.)
 
 This flower adds a drag and drop functionality to layouts and widgets. There are 3
 main components used to have drag and drop:
@@ -136,5 +137,4 @@ Please see the [LICENSE.txt](LICENSE.txt) file.
 
 [drag_n_drop]:https://github.com/kivy-garden/drag_n_drop
 [flutter]:https://api.flutter.dev/flutter/widgets/Draggable-class.html
-[jpdoc]:https://qiita.com/gotta_dive_into_python/private/b7957650b64a89783ea0
 [youtube]:https://www.youtube.com/playlist?list=PLNdhqAjzeEGiepWKfP43Dh7IWqn3cQtpQ
