@@ -6,10 +6,10 @@
 
 Inspired by:
 
-* [drag_n_drop][drag_n_drop]
+* [drag_n_drop][drag_n_drop] (`Draggable` is based on this, so please read its documentation first)
 * [Flutter][flutter]
 
-(This flower is based on drag_n_drop, so please read its documentation prior to this one.)
+**Installation**: `pip install kivy_garden.draggable --extra-index-url https://kivy-garden.github.io/simple/`
 
 This flower adds a drag and drop functionality to layouts and widgets. There are 3
 main components used to have drag and drop:
@@ -72,7 +72,8 @@ class Deck(Widget):
 ## Customization
 
 What draggables do `on_drag_success` / `on_drag_fail` / `on_drag_cancel` are completely customizable.
-For example, by default, when a drag fails, the draggable will go back to where it came from with little animation. This is because the default handler of `on_drag_fail` is implemented as follows:
+For example, by default, when a drag fails, the draggable will go back to where it came from with little animation.
+This is because the default handler of `on_drag_fail` is implemented as follows:
 
 ```python
 class KXDraggableBehavior:

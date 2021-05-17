@@ -3,6 +3,8 @@
 ![](http://img.youtube.com/vi/CjiRZjiSqgA/0.jpg)  
 [Youtube][youtube]  
 
+**Install方法**: `pip install kivy_garden.draggable --extra-index-url https://kivy-garden.github.io/simple/`
+
 `kivy_garden.draggable`はdrag&dropの機能を実現するための拡張機能で以下の三つの部品で構成される。
 
 - `KXDraggableBehavior` ... dragできるようにしたいwidgetが継承すべきclass
@@ -34,7 +36,7 @@ class MyDroppable(KXDroppableBehavior, Widget):
         return not self.children
 ```
 
-という風に実装されていたら、このdroppableは自分が子を持っている間は例え適切な`drag_cls`を持つdraggableであっても受け付けないだろう。
+という風に実装されていたら、このdroppableは自分が子を持っている間は例え適切な`drag_cls`を持つdraggableであっても受け付けない。
 
 ## dragの中止
 
