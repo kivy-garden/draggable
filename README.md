@@ -55,9 +55,8 @@ def cancel_all_ongoing_drags():
 Let's say you are creating a card game, and there is a deck on the screen.
 Say, you want the deck to emit a card when the user drops a finger on it,
 and want the card to follow the finger until the user lifts it up.
-This means a widget who triggers a drag and a widget who gets dragged are
-different.
-You can implement this functionality as follows:
+In this situation, a widget who triggers a drag and a widget who is dragged are different.
+You can implement it as follows:
 
 ```python
 class Card(KXDraggableBehavior, Widget):
@@ -66,7 +65,7 @@ class Card(KXDraggableBehavior, Widget):
 
 class Deck(Widget):
     def on_touch_down(self, touch):
-        if self.collide_point(*touch.opos) and (not touch.is_mouse_scrolling):
+        if self.collide_point(*touch.opos):
             Card(...).drag_start_from_other_widget(self, touch)
 ```
 
@@ -87,18 +86,18 @@ class KXDraggableBehavior:
         restore_widget_location(self, ctx.original_location)
 ```
 
-If you don't need the animation, and want the draggable to go back instantly, overwrite the handler as follows:
+If you don't need the animation, and want the draggable to go back instantly, overwrite it as follows:
 
 ```python
-class YourOne(...):
+class MyDraggable(KXDraggableBehavior, Widget):
     def on_drag_fail(self, touch):
         restore_widget_location(self, self.drag_context.original_location)
 ```
 
-Or if you want the draggable to not go back, and want it to stay the current position, overwrite the handler as follows:
+Or if you want the draggable to not go back, and want it to stay the current position, overwrite it as follows:
 
 ```python
-class YourOne(...):
+class MyDraggable(KXDraggableBehavior, Widget):
     def on_drag_fail(self, touch):
         pass
 ```
@@ -108,7 +107,7 @@ If you don't like it, and want the draggable to fade-out,
 overwrite the handler as follows:
 
 ```python
-class YourOne(...):
+class MyDraggable(KXDraggableBehavior, Widget):
     async def on_drag_success(self, touch):
         import asynckivy
         await asynckivy.animate(self, opacity=0)
@@ -119,16 +118,12 @@ Just like that, you have free rein to change those behaviors.
 But note that **only the default handler of `on_drag_success` and `on_drag_fail`
 can be an async function. Those two only.**
 
-You might say "What's the point of making a default handler into an async function,
-when you can just launch any number of tasks from regular functions by using ``asynckivy.start()``?".
-Well, if you use ``asynckivy.start()``, that task will be completely isolated from the dragging process,
-which means the draggable may fire ``on_drag_end`` and becomes able to start another drag while the task is still running.
-If you make default handlers into async functions,
-its code is a part of dragging process and is guaranteed to be finished before ``on_drag_end`` gets fired.
-
-To summarize, if you have asynchronous code that has to be a part of the dragging process,
-make a default handler into an async function.
-Otherwise, you shouldn't do that.
+You might say "What's the point of implementing a default handler as an async function,
+when you can just launch any number of tasks from regular function by using ``asynckivy.start()``?".
+Well, if you use ``asynckivy.start()``, that task will run independently from the dragging process,
+which means the draggable may fire ``on_drag_end`` and may start another drag while the task is still running.
+If a default handler is an async function,
+its code will be a part of dragging process and is guaranteed to be finished before ``on_drag_end`` gets fired.
 
 ## License
 
