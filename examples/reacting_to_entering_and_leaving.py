@@ -87,6 +87,15 @@ class MyDraggable(KXDraggableBehavior, Label):
 
 
 class ReactiveDroppableBehavior(KXDroppableBehavior):
+    '''
+    ``KXDroppableBehavior`` + leaving/entering events.
+
+    .. note::
+
+        This class probably deserves to be an official component. But not now
+        because I'm not sure the word 'reactive' is appropriate to describe
+        its behavior.
+    '''
     __events__ = ('on_drag_enter', 'on_drag_leave', )
 
     def __init__(self, **kwargs):
