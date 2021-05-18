@@ -3,7 +3,7 @@
 ![](http://img.youtube.com/vi/CjiRZjiSqgA/0.jpg)  
 [Youtube][youtube]  
 
-**Install方法**: `pip install kivy_garden.draggable --extra-index-url https://kivy-garden.github.io/simple/`
+**Install方法**: `pip install kivy_garden.draggable`
 
 `kivy_garden.draggable`はdrag&dropの機能を実現するための拡張機能で以下の三つの部品で構成される。
 

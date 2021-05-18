@@ -9,7 +9,7 @@ Inspired by:
 * [drag_n_drop][drag_n_drop] (`Draggable` is based on this, so please read its documentation first)
 * [Flutter][flutter]
 
-**Installation**: `pip install kivy_garden.draggable --extra-index-url https://kivy-garden.github.io/simple/`
+**Installation**: `pip install kivy_garden.draggable`
 
 This flower adds a drag and drop functionality to layouts and widgets. There are 3
 main components used to have drag and drop:
@@ -87,7 +87,7 @@ class KXDraggableBehavior:
         restore_widget_location(self, ctx.original_location)
 ```
 
-If you don't need the animation, and want the draggable to go back instantly, overwrite it as follows:
+If you don't need the animation, and want the draggable to go back instantly, overwrite the handler as follows:
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
@@ -95,7 +95,7 @@ class MyDraggable(KXDraggableBehavior, Widget):
         restore_widget_location(self, self.drag_context.original_location)
 ```
 
-Or if you want the draggable to not go back, and want it to stay the current position, overwrite it as follows:
+Or if you want the draggable to not go back, and want it to stay the current position, overwrite the handler as follows:
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):

@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "kivy_garden.draggable"
+version = "0.1.1"
+description = "Drag & Drop Extension for Kivy"
+authors = ["Nattōsai Mitō <flow4re2c@gmail.com>"]
+license = "MIT"
+readme = 'README.md'
+repository = 'https://github.com/kivy-garden/draggable'
+homepage = 'https://github.com/kivy-garden/draggable'
+keywords = ['kivy']
+classifiers=[
+    'Development Status :: 5 - Production/Stable',
+    'License :: OSI Approved :: MIT License',
+    'Intended Audience :: Developers',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Topic :: Software Development :: Libraries',
+    'Operating System :: OS Independent',
+]
+packages = [
+    { include = "kivy_garden" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+asynckivy = "~0.5"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.4.3"
+flake8 = "^3.8.4"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

@@ -22,14 +22,14 @@ URL = 'https://github.com/kivy-garden/draggable'
 setup(
     name='kivy_garden.draggable',
     version=__version__,
-    description='A kivy-garden flower that adds a drag & drop functionality',
+    description='Drag & Drop Extension for Kivy',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url=URL,
     author='Nattōsai Mitō',
     author_email='flow4re2c@gmail.com',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries',
         'License :: OSI Approved :: MIT License',
