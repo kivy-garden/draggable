@@ -74,7 +74,7 @@ class DragContext:
     @property
     def cancelled(self) -> bool:
         return self.state == 'cancelled'
-    '''This property exists just for backward compatibility.
+    '''This property exists only for backward compatibility.
     Use ``state`` instead.
     '''
 
@@ -122,7 +122,7 @@ class KXDraggableBehavior:
 
     def drag_cancel(self):
         '''Cancels drag as soon as possible. Does nothing if the draggable is
-        not being dragged
+        not being dragged.
         '''
         self._drag_task.cancel()
 
@@ -248,7 +248,7 @@ class KXDraggableBehavior:
             )
             window.add_widget(self)
 
-            # mark the touch so that the other widgets can react to the drag
+            # mark the touch so that other widgets can react to the drag
             touch_ud['kivyx_drag_cls'] = self.drag_cls
             touch_ud['kivyx_draggable'] = self
 
@@ -257,8 +257,7 @@ class KXDraggableBehavior:
                 self.x = touch.x - offset_x
                 self.y = touch.y - offset_y
 
-            # we need to give the other widgets the time to react to
-            # 'on_touch_up'
+            # wait for other widgets to react to 'on_touch_up'
             await ak.sleep(-1)
 
             ctx.droppable = droppable = touch_ud.get('kivyx_droppable', None)

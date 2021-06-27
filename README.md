@@ -122,7 +122,7 @@ can be an async function. Those two only.**
 You might say "What's the point of implementing a default handler as an async function,
 when you can just launch any number of tasks from regular function by using ``asynckivy.start()``?".
 Well, if you use ``asynckivy.start()``, that task will run independently from the dragging process,
-which means the draggable may fire ``on_drag_end`` and may start another drag while the task is still running.
+which means the draggable might fire ``on_drag_end`` and might start another drag while the task is still running.
 If a default handler is an async function,
 its code will be a part of dragging process and is guaranteed to be finished before ``on_drag_end`` gets fired.
 
