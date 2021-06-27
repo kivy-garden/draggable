@@ -179,11 +179,14 @@ class KXDraggableBehavior:
 
     async def _true_when_a_touch_ended_false_when_it_moved_too_much(
             self, touch):
+        # assigning to a local variable might improve performance
+        abs_ = abs
         drag_distance = self.drag_distance
+
         ox, oy = touch.opos
         async for __ in ak.rest_of_touch_moves(self, touch):
-            dx = abs(touch.x - ox)
-            dy = abs(touch.y - oy)
+            dx = abs_(touch.x - ox)
+            dy = abs_(touch.y - oy)
             if dy > drag_distance or dx > drag_distance:
                 return False
         return True
