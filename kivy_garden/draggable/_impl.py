@@ -133,14 +133,17 @@ class KXDraggableBehavior:
 
     def _is_a_touch_potentially_a_drag(self, touch) -> bool:
         return self.collide_point(*touch.opos) \
-            and self.drag_enabled \
-            and (not self.is_being_dragged) \
             and (not touch.is_mouse_scrolling) \
             and (self.__ud_key not in touch.ud) \
             and (touch.time_end == -1)
 
+    @property
+    def _can_be_dragged(self) -> bool:
+        return self.drag_enabled and (not self.is_being_dragged)
+
     def on_touch_down(self, touch):
-        if self._is_a_touch_potentially_a_drag(touch):
+        if self._is_a_touch_potentially_a_drag(touch) \
+                and self._can_be_dragged:
             touch.ud[self.__ud_key] = None
             if self.drag_timeout:
                 ak.start(self._see_if_a_touch_can_be_treated_as_a_drag(touch))
@@ -160,14 +163,14 @@ class KXDraggableBehavior:
         )
         if tasks[0].done:
             # The given touch is a dragging gesture.
-            if self.is_being_dragged or (not self.drag_enabled):
-                ak.start(self._simulate_a_normal_touch(
-                    touch, do_transform=True))
-            else:
+            if self._can_be_dragged:
                 self._drag_task.cancel()
                 self._drag_task = ak.Task(
                     self._treat_a_touch_as_a_drag(touch, do_transform=True))
                 ak.start(self._drag_task)
+            else:
+                ak.start(self._simulate_a_normal_touch(
+                    touch, do_transform=True))
         else:
             # The given touch is not a dragging gesture.
             ak.start(self._simulate_a_normal_touch(
