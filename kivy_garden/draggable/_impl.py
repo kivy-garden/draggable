@@ -131,7 +131,7 @@ class KXDraggableBehavior:
         super().__init__(**kwargs)
         self.__ud_key = 'KXDraggableBehavior.' + str(self.uid)
 
-    def _is_a_touch_potentially_a_drag(self, touch) -> bool:
+    def _is_a_touch_potentially_a_dragging_gesture(self, touch) -> bool:
         return self.collide_point(*touch.opos) \
             and (not touch.is_mouse_scrolling) \
             and (self.__ud_key not in touch.ud) \
@@ -142,11 +142,12 @@ class KXDraggableBehavior:
         return self.drag_enabled and (not self.is_being_dragged)
 
     def on_touch_down(self, touch):
-        if self._is_a_touch_potentially_a_drag(touch) \
+        if self._is_a_touch_potentially_a_dragging_gesture(touch) \
                 and self._can_be_dragged:
             touch.ud[self.__ud_key] = None
             if self.drag_timeout:
-                ak.start(self._see_if_a_touch_can_be_treated_as_a_drag(touch))
+                ak.start(self._see_if_a_touch_actually_is_a_dragging_gesture(
+                    touch))
             else:
                 self._drag_task.cancel()
                 self._drag_task = ak.Task(self._treat_a_touch_as_a_drag(touch))
@@ -156,7 +157,7 @@ class KXDraggableBehavior:
             touch.ud[self.__ud_key] = None
             return super().on_touch_down(touch)
 
-    async def _see_if_a_touch_can_be_treated_as_a_drag(self, touch):
+    async def _see_if_a_touch_actually_is_a_dragging_gesture(self, touch):
         tasks = await ak.or_(
             ak.sleep(self.drag_timeout / 1000.),
             self._true_when_a_touch_ended_false_when_it_moved_too_much(touch),
