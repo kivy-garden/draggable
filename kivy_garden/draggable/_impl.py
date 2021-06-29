@@ -74,7 +74,7 @@ class DragContext:
     @property
     def cancelled(self) -> bool:
         return self.state == 'cancelled'
-    '''This property exists just for backward compatibility.
+    '''This property exists only for backward compatibility.
     Use ``state`` instead.
     '''
 
@@ -122,7 +122,7 @@ class KXDraggableBehavior:
 
     def drag_cancel(self):
         '''Cancels drag as soon as possible. Does nothing if the draggable is
-        not being dragged
+        not being dragged.
         '''
         self._drag_task.cancel()
 
@@ -131,19 +131,23 @@ class KXDraggableBehavior:
         super().__init__(**kwargs)
         self.__ud_key = 'KXDraggableBehavior.' + str(self.uid)
 
-    def _is_a_touch_potentially_a_drag(self, touch) -> bool:
+    def _is_a_touch_potentially_a_dragging_gesture(self, touch) -> bool:
         return self.collide_point(*touch.opos) \
-            and self.drag_enabled \
-            and (not self.is_being_dragged) \
             and (not touch.is_mouse_scrolling) \
             and (self.__ud_key not in touch.ud) \
             and (touch.time_end == -1)
 
+    @property
+    def _can_be_dragged(self) -> bool:
+        return self.drag_enabled and (not self.is_being_dragged)
+
     def on_touch_down(self, touch):
-        if self._is_a_touch_potentially_a_drag(touch):
+        if self._is_a_touch_potentially_a_dragging_gesture(touch) \
+                and self._can_be_dragged:
             touch.ud[self.__ud_key] = None
             if self.drag_timeout:
-                ak.start(self._see_if_a_touch_can_be_treated_as_a_drag(touch))
+                ak.start(self._see_if_a_touch_actually_is_a_dragging_gesture(
+                    touch))
             else:
                 self._drag_task.cancel()
                 self._drag_task = ak.Task(self._treat_a_touch_as_a_drag(touch))
@@ -153,21 +157,21 @@ class KXDraggableBehavior:
             touch.ud[self.__ud_key] = None
             return super().on_touch_down(touch)
 
-    async def _see_if_a_touch_can_be_treated_as_a_drag(self, touch):
+    async def _see_if_a_touch_actually_is_a_dragging_gesture(self, touch):
         tasks = await ak.or_(
             ak.sleep(self.drag_timeout / 1000.),
             self._true_when_a_touch_ended_false_when_it_moved_too_much(touch),
         )
         if tasks[0].done:
             # The given touch is a dragging gesture.
-            if self.is_being_dragged or (not self.drag_enabled):
-                ak.start(self._simulate_a_normal_touch(
-                    touch, do_transform=True))
-            else:
+            if self._can_be_dragged:
                 self._drag_task.cancel()
                 self._drag_task = ak.Task(
                     self._treat_a_touch_as_a_drag(touch, do_transform=True))
                 ak.start(self._drag_task)
+            else:
+                ak.start(self._simulate_a_normal_touch(
+                    touch, do_transform=True))
         else:
             # The given touch is not a dragging gesture.
             ak.start(self._simulate_a_normal_touch(
@@ -175,11 +179,14 @@ class KXDraggableBehavior:
 
     async def _true_when_a_touch_ended_false_when_it_moved_too_much(
             self, touch):
+        # assigning to a local variable might improve performance
+        abs_ = abs
         drag_distance = self.drag_distance
+
         ox, oy = touch.opos
         async for __ in ak.rest_of_touch_moves(self, touch):
-            dx = abs(touch.x - ox)
-            dy = abs(touch.y - oy)
+            dx = abs_(touch.x - ox)
+            dy = abs_(touch.y - oy)
             if dy > drag_distance or dx > drag_distance:
                 return False
         return True
@@ -241,7 +248,7 @@ class KXDraggableBehavior:
             )
             window.add_widget(self)
 
-            # mark the touch so that the other widgets can react to the drag
+            # mark the touch so that other widgets can react to the drag
             touch_ud['kivyx_drag_cls'] = self.drag_cls
             touch_ud['kivyx_draggable'] = self
 
@@ -250,8 +257,7 @@ class KXDraggableBehavior:
                 self.x = touch.x - offset_x
                 self.y = touch.y - offset_y
 
-            # we need to give the other widgets the time to react to
-            # 'on_touch_up'
+            # wait for other widgets to react to 'on_touch_up'
             await ak.sleep(-1)
 
             ctx.droppable = droppable = touch_ud.get('kivyx_droppable', None)
