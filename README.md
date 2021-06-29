@@ -6,7 +6,7 @@
 
 Inspired by:
 
-* [drag_n_drop][drag_n_drop] (`Draggable` is based on this, so please read its documentation first)
+* [drag_n_drop][drag_n_drop] (`Draggable` is based on this, so please read its documentation first to get the basic idea of this one)
 * [Flutter][flutter]
 
 **Installation**: `pip install kivy_garden.draggable`
