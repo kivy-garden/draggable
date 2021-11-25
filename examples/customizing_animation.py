@@ -10,9 +10,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 import asynckivy as ak
 
-from kivy_garden.draggable import (
-    KXDroppableBehavior, KXDraggableBehavior, restore_widget_location,
-)
+from kivy_garden.draggable import KXDroppableBehavior, KXDraggableBehavior
 
 KV_CODE = '''
 <Cell>:
