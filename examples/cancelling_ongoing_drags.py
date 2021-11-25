@@ -7,7 +7,7 @@ from kivy.lang import Builder
 from kivy.factory import Factory
 
 from kivy_garden.draggable import (
-    KXDraggableBehavior, restore_widget_location,
+    KXDraggableBehavior, restore_widget_location, ongoing_drags,
 )
 
 
@@ -67,13 +67,7 @@ class SampleApp(App):
             gl.add_widget(DraggableItem(text=str(i)))
 
     def cancel_ongoing_drags(self):
-        # The tuple here is needed for the same reason as you need to
-        # duplicate 'children' in the code below.
-        #
-        # for c in widget.children[:]:
-        #     widget.remove_widget(c)
-        #
-        for draggable in tuple(KXDraggableBehavior.ongoing_drags()):
+        for draggable in ongoing_drags():
             draggable.drag_cancel()
 
 

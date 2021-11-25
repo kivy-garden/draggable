@@ -40,16 +40,18 @@ class MyDroppable(KXDroppableBehavior, Widget):
 
 ## dragの中止
 
-アプリが次のシーンに移りたい時にまだdrag中のwidgetがあると不都合かもれしない。そのような事態に備えてdraggableには
+アプリが次のシーンに移りたい時にまだdrag中のwidgetがあると不都合かもれしない。そのような事態に備えて
 
 - 現在進行中のdragを列挙する`ongoing_drags()`と
-- dragを中止する`drag_cancel()`がある。
+- dragを中止する`draggable.drag_cancel()`がある。
 
 これらを用いる事で以下のように進行中のdragを全て中止できる。
 
 ```python
+from kivy_garden.draggable import ongoing_drags
+
 def cancel_all_ongoing_drags():
-    for draggable in tuple(KXDraggableBehavior.ongoing_drags()):
+    for draggable in ongoing_drags():
         draggable.drag_cancel()
 ```
 

@@ -42,11 +42,13 @@ Once a drag has started, it will go through the following path.
 ## Cancellation
 
 When your app switches a scene, you may want to cancel the all ongoing drags.
-`KXDraggableBehavior.ongoing_drags()` and `draggable.drag_cancel()` are what you want.
+`ongoing_drags()` and `draggable.drag_cancel()` are what you want.
 
 ```python
+from kivy_garden.draggable import ongoing_drags
+
 def cancel_all_ongoing_drags():
-    for draggable in tuple(KXDraggableBehavior.ongoing_drags()):
+    for draggable in ongoing_drags():
         draggable.drag_cancel()
 ```
 

@@ -22,8 +22,9 @@ KXDraggableBehaviorがTaskを作る際に
 __all__ = (
     'KXDraggableBehavior', 'KXDroppableBehavior', 'KXReorderableBehavior',
     'save_widget_location', 'restore_widget_location', 'DragContext',
+    'ongoing_drags',
 )
-from typing import Tuple, Union, Iterator
+from typing import List, Tuple, Union, Iterator
 from contextlib import contextmanager
 from inspect import isawaitable
 from dataclasses import dataclass
@@ -110,6 +111,8 @@ class KXDraggableBehavior:
     )
 
     @staticmethod
+    @deprecated(msg=r"'KXDraggableBehavior.ongoing_drags()' is deprecated. "
+                    r"Use the stand-alone 'ongoing_drags()' function instead")
     def ongoing_drags(*, window=None) -> Iterator['KXDraggableBehavior']:
         if window is None:
             from kivy.core.window import Window
@@ -353,6 +356,18 @@ class KXDraggableBehavior:
 
     def on_drag_cancel(self, touch):
         restore_widget_location(self, self._drag_ctx.original_location)
+
+
+def ongoing_drags(*, window=None) -> List[KXDraggableBehavior]:
+    '''Returns a list of draggables currently being dragged'''
+    if window is None:
+        from kivy.core.window import Window
+        window = Window
+    return [
+        c for c in window.children
+        # maybe it's better not to check the type, like: getattr(c, 'is_being_dragged', False)
+        if isinstance(c, KXDraggableBehavior) and c.is_being_dragged
+    ]
 
 
 class KXDroppableBehavior:
