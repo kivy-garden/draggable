@@ -29,6 +29,7 @@ from inspect import isawaitable
 from dataclasses import dataclass
 
 from kivy.config import Config
+from kivy.utils import deprecated
 from kivy.properties import (
     BooleanProperty, ListProperty, StringProperty, NumericProperty,
 )
@@ -72,6 +73,8 @@ class DragContext:
     '''
 
     @property
+    @deprecated(
+        msg=r"'DragContext.cancelled' isdeprecated. Use '.state' instead.")
     def cancelled(self) -> bool:
         return self.state == 'cancelled'
     '''This property exists only for backward compatibility.
@@ -381,11 +384,8 @@ class KXReorderableBehavior:
     '''
 
     @classmethod
+    @deprecated(msg=r"KXReorderableBehavior.create_spacer() is deprecated,")
     def create_spacer(cls, **kwargs):
-        import warnings
-        warnings.warn(
-            r"KXReorderableBehavior.create_spacer() is deprecated, "
-            r"and will be removed in the future.")
         return _create_spacer(**kwargs)
 
     def __init__(self, **kwargs):
