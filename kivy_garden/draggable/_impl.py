@@ -365,7 +365,8 @@ def ongoing_drags(*, window=None) -> List[KXDraggableBehavior]:
         window = Window
     return [
         c for c in window.children
-        # maybe it's better not to check the type, like: getattr(c, 'is_being_dragged', False)
+        # maybe it's better not to check the type, like:
+        # getattr(c, 'is_being_dragged', False)
         if isinstance(c, KXDraggableBehavior) and c.is_being_dragged
     ]
 
