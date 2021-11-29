@@ -6,4 +6,4 @@ test:
 	$(PYTEST) ./kivy_garden/draggable/tests
 
 style:
-	$(FLAKE8) ./kivy_garden/draggable ./examples
+	$(FLAKE8) ./kivy_garden/draggable

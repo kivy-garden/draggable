@@ -36,6 +36,7 @@ Main differences from drag_n_drop
 __all__ = (
     'KXDraggableBehavior', 'KXDroppableBehavior', 'KXReorderableBehavior',
     'save_widget_location', 'restore_widget_location', 'DragContext',
+    'ongoing_drags',
 )
 
 from ._version import __version__
