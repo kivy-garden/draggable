@@ -1,3 +1,7 @@
+'''
+https://www.youtube.com/watch?v=PNj8uEdd5c0
+'''
+
 import itertools
 from contextlib import closing
 from os import PathLike
@@ -16,8 +20,6 @@ from kivy_garden.draggable import KXDraggableBehavior
 KV_CODE = r'''
 <SHLabel@Label,SHButton@Button>:
     size_hint_min: [v + dp(8) for v in self.texture_size]
-    halign: 'center'
-    valign: 'center'
 <SHFood>:
     orientation: 'vertical'
     spacing: '4dp'
@@ -142,14 +144,15 @@ class SHMain(F.BoxLayout):
                 for __ in range(randint(2, 4))
             ]
 
-    async def _load_database(self, db_path: PathLike) -> sqlite3.Connection:
+    @staticmethod
+    async def _load_database(db_path: PathLike) -> sqlite3.Connection:
         from os.path import exists
         already_exists = exists(db_path)
         conn = sqlite3.connect(db_path)
         conn.execute("PRAGMA foreign_keys = ON")
         if not already_exists:
             try:
-                await self._init_database(conn)
+                await SHMain._init_database(conn)
             except Exception:
                 from os import remove
                 remove(db_path)
@@ -225,7 +228,7 @@ class RVLikeBehavior:
     '''
 
     viewclass = ObjectProperty()
-    '''widget or string'''
+    '''widget-class or its name'''
 
     def __init__(self, **kwargs):
         self._rv_refresh_params = {}
@@ -238,7 +241,7 @@ class RVLikeBehavior:
 
     def _get_data(self) -> Iterable:
         data = self._rv_refresh_params.get('data')
-        return [c.datum for c in self.children] if data is None else data
+        return [c.datum for c in reversed(self.children)] if data is None else data
 
     def _set_data(self, new_data: Iterable):
         self._rv_refresh_params['data'] = new_data
@@ -253,11 +256,11 @@ class RVLikeBehavior:
             return
         data = self.data
         params = self._rv_refresh_params
-        reusable_view_widgets = '' if 'viewclass' in params else self.children[::-1]
+        reusable_widgets = '' if 'viewclass' in params else self.children[::-1]
         self.clear_widgets()
         if isinstance(viewclass, str):
             viewclass = F.get(viewclass)
-        for datum, w in zip(data, itertools.chain(reusable_view_widgets, iter(viewclass, None))):
+        for datum, w in zip(data, itertools.chain(reusable_widgets, iter(viewclass, None))):
             w.datum = datum
             self.add_widget(w)
         params.clear()
