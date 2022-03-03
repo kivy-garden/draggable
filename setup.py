@@ -8,7 +8,6 @@ from os import path
 here = path.abspath(path.dirname(__file__))
 
 filename = path.join(here, 'kivy_garden', 'draggable', '_version.py')
-# change this                              ^^^^^^
 locals = {}
 with open(filename, "rb") as fh:
     exec(compile(fh.read(), filename, 'exec'), globals(), locals)

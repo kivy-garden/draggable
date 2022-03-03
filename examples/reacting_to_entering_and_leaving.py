@@ -115,8 +115,7 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
                     # the drag is cancelled.
                     ak.start(ak.or_(
                         self._watch_touch(touch),
-                        ak.event(
-                            touch.ud['kivyx_draggable'], 'is_being_dragged'),
+                        ak.event(touch.ud['kivyx_draggable'], 'is_being_dragged'),
                     ))
         return super().on_touch_move(touch)
 

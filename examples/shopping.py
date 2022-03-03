@@ -116,14 +116,16 @@ class ShoppingApp(App):
 
 
 class SHMain(F.BoxLayout):
-    def show_total_price(self, *, _cache={}):
-        popup = _cache.get('popup', None)
-        if popup is None:
-            _cache['popup'] = popup = F.Popup(
+    def show_total_price(self, *, _cache=[]):
+        try:
+            popup = _cache.pop()
+        except IndexError:
+            popup = F.Popup(
                 size_hint=(.5, .2, ),
                 title='Total',
                 content=F.Label(),
             )
+            popup.bind(on_dismiss=lambda *__: _cache.append(popup))
         total_price = sum(d.price for d in self.ids.cart.data)
         popup.content.text = f"{total_price} yen"
         popup.open()

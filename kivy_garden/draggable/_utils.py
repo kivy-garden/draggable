@@ -36,8 +36,7 @@ _shallow_copyable_property_names = (
 
 def save_widget_location(widget, *, ignore_parent=False) -> dict:
     w = widget.__self__
-    location = {
-        name: getattr(w, name) for name in _shallow_copyable_property_names}
+    location = {name: getattr(w, name) for name in _shallow_copyable_property_names}
     location['pos_hint'] = deepcopy(w.pos_hint)
     if ignore_parent:
         return location
@@ -87,9 +86,9 @@ def _create_spacer(**kwargs):
     with spacer.canvas:
         color = kwargs.get('color', None)
         if color is None:
-            color_inst = Color(.2, .2, .2, .7)
+            Color(.2, .2, .2, .7)
         else:
-            color_inst = Color(*rgba(color))
+            Color(*rgba(color))
         rect_inst = Rectangle(size=spacer.size)
     spacer.bind(
         pos=lambda __, value: setattr(rect_inst, 'pos', value),

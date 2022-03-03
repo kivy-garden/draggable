@@ -59,8 +59,7 @@ class FlutterStyleDraggable(KXDraggableBehavior, ScreenManager):
         super().on_kv_post(*args, **kwargs)
         self.transition = NoTransition()
         self.current = 'child'
-        self.fbind('is_being_dragged',
-                   FlutterStyleDraggable.__on_is_being_dragged)
+        self.fbind('is_being_dragged', FlutterStyleDraggable.__on_is_being_dragged)
 
     def __on_is_being_dragged(self, value):
         self.current = 'feedback' if value else 'child'
