@@ -36,8 +36,7 @@ _shallow_copyable_property_names = (
 
 def save_widget_location(widget, *, ignore_parent=False) -> dict:
     w = widget.__self__
-    location = {
-        name: getattr(w, name) for name in _shallow_copyable_property_names}
+    location = {name: getattr(w, name) for name in _shallow_copyable_property_names}
     location['pos_hint'] = deepcopy(w.pos_hint)
     if ignore_parent:
         return location

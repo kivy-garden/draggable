@@ -85,8 +85,7 @@ class Deck(Label):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
             try:
-                Card(text=next(self.text_iter)) \
-                    .drag_start_from_other_widget(self, touch)
+                Card(text=next(self.text_iter)).drag_start_from_other_widget(self, touch)
             except StopIteration:
                 pass
             return True

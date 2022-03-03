@@ -148,12 +148,10 @@ class KXDraggableBehavior:
         return self.drag_enabled and (not self.is_being_dragged)
 
     def on_touch_down(self, touch):
-        if self._is_a_touch_potentially_a_dragging_gesture(touch) \
-                and self._can_be_dragged:
+        if self._is_a_touch_potentially_a_dragging_gesture(touch) and self._can_be_dragged:
             touch.ud[self.__ud_key] = None
             if self.drag_timeout:
-                ak.start(self._see_if_a_touch_actually_is_a_dragging_gesture(
-                    touch))
+                ak.start(self._see_if_a_touch_actually_is_a_dragging_gesture(touch))
             else:
                 self._drag_task.cancel()
                 self._drag_task = ak.Task(self._treat_a_touch_as_a_drag(touch))
@@ -172,19 +170,15 @@ class KXDraggableBehavior:
             # The given touch is a dragging gesture.
             if self._can_be_dragged:
                 self._drag_task.cancel()
-                self._drag_task = ak.Task(
-                    self._treat_a_touch_as_a_drag(touch, do_transform=True))
+                self._drag_task = ak.Task(self._treat_a_touch_as_a_drag(touch, do_transform=True))
                 ak.start(self._drag_task)
             else:
-                ak.start(self._simulate_a_normal_touch(
-                    touch, do_transform=True))
+                ak.start(self._simulate_a_normal_touch(touch, do_transform=True))
         else:
             # The given touch is not a dragging gesture.
-            ak.start(self._simulate_a_normal_touch(
-                touch, do_touch_up=tasks[1].result))
+            ak.start(self._simulate_a_normal_touch(touch, do_touch_up=tasks[1].result))
 
-    async def _true_when_a_touch_ended_false_when_it_moved_too_much(
-            self, touch):
+    async def _true_when_a_touch_ended_false_when_it_moved_too_much(self, touch):
         # assigning to a local variable might improve performance
         abs_ = abs
         drag_distance = self.drag_distance
@@ -214,8 +208,7 @@ class KXDraggableBehavior:
             self._treat_a_touch_as_a_drag(touch, drag_from=drag_from))
         ak.start(self._drag_task)
 
-    async def _treat_a_touch_as_a_drag(
-            self, touch, *, do_transform=False, drag_from=None):
+    async def _treat_a_touch_as_a_drag(self, touch, *, do_transform=False, drag_from=None):
         if drag_from is None:
             drag_from = self
         self.is_being_dragged = True
@@ -224,8 +217,7 @@ class KXDraggableBehavior:
             window = drag_from.get_parent_window()
             touch_ud = touch.ud
             original_pos_win = drag_from.to_window(*drag_from.pos)
-            original_location = save_widget_location(
-                drag_from, ignore_parent=(drag_from is not self))
+            original_location = save_widget_location(drag_from, ignore_parent=(drag_from is not self))
             original_location.setdefault('weak_parent', None)
             self._drag_ctx = ctx = DragContext(
                 original_pos_win=original_pos_win,
@@ -242,8 +234,7 @@ class KXDraggableBehavior:
 
             # move self under the Window
             if self.parent is None:  # more like (drag_from is not self)
-                restore_widget_location(
-                    self, original_location, ignore_parent=True)
+                restore_widget_location(self, original_location, ignore_parent=True)
             else:
                 self.parent.remove_widget(self)
             self.size_hint = (None, None, )
@@ -291,8 +282,7 @@ class KXDraggableBehavior:
             del touch_ud['kivyx_drag_cls']
             del touch_ud['kivyx_draggable']
 
-    async def _simulate_a_normal_touch(
-            self, touch, *, do_transform=False, do_touch_up=False):
+    async def _simulate_a_normal_touch(self, touch, *, do_transform=False, do_touch_up=False):
         # simulate 'on_touch_down'
         with temp_grab_current(touch):
             touch.grab_current = None
@@ -308,8 +298,7 @@ class KXDraggableBehavior:
         await ak.sleep(.1)
 
         # simulate 'on_touch_up'
-        to_widget = self.to_widget if self.parent is None \
-            else self.parent.to_widget
+        to_widget = self.to_widget if self.parent is None else self.parent.to_widget
         touch.grab_current = None
         with temp_transform(touch):
             touch.apply_transform_2d(to_widget)
@@ -342,8 +331,7 @@ class KXDraggableBehavior:
         self.size_hint_x = original_location['size_hint_x']
         self.size_hint_y = original_location['size_hint_y']
         self.pos_hint = original_location['pos_hint']
-        ctx.droppable.add_widget(
-            self, index=touch.ud.get('kivyx_droppable_index', 0))
+        ctx.droppable.add_widget(self, index=touch.ud.get('kivyx_droppable_index', 0))
 
     async def on_drag_fail(self, touch):
         ctx = self._drag_ctx
@@ -421,9 +409,7 @@ class KXReorderableBehavior:
 
     def on_spacer_widgets(self, __, spacer_widgets):
         if self._active_spacers:
-            raise ak.InvalidStateError(
-                "Do not change the 'spacer_widgets' when there is an ongoing"
-                " drag.")
+            raise ak.InvalidStateError("Do not change the 'spacer_widgets' when there is an ongoing drag.")
         self._inactive_spacers = [w.__self__ for w in spacer_widgets]
 
     def get_widget_under_drag(self, x, y) -> Tuple[Widget, int]:
@@ -448,8 +434,7 @@ class KXReorderableBehavior:
     def on_touch_move(self, touch):
         ud_key = self.__ud_key
         touch_ud = touch.ud
-        if ud_key not in touch_ud and self._inactive_spacers \
-                and self.collide_point(*touch.pos):
+        if ud_key not in touch_ud and self._inactive_spacers and self.collide_point(*touch.pos):
             drag_cls = touch_ud.get('kivyx_drag_cls', None)
             if drag_cls is not None:
                 touch_ud[ud_key] = None
@@ -459,8 +444,7 @@ class KXReorderableBehavior:
                     # the drag is cancelled.
                     ak.start(ak.or_(
                         self._watch_touch(touch),
-                        ak.event(
-                            touch.ud['kivyx_draggable'], 'is_being_dragged'),
+                        ak.event(touch.ud['kivyx_draggable'], 'is_being_dragged'),
                     ))
         return super().on_touch_move(touch)
 

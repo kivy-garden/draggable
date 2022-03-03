@@ -23,8 +23,7 @@ class Magnet(Factory.Widget):
     _coro = ak.sleep_forever()
 
     def __init__(self, **kwargs):
-        self._anim_trigger = trigger = \
-            Clock.create_trigger(self._start_anim, -1)
+        self._anim_trigger = trigger = Clock.create_trigger(self._start_anim, -1)
         super().__init__(**kwargs)
         self.fbind('pos', trigger)
         self.fbind('size', trigger)
