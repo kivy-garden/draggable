@@ -111,8 +111,7 @@ class KXDraggableBehavior:
     )
 
     @staticmethod
-    @deprecated(msg=r"'KXDraggableBehavior.ongoing_drags()' is deprecated. "
-                    r"Use the stand-alone 'ongoing_drags()' function instead")
+    @deprecated(msg=r"'KXDraggableBehavior.ongoing_drags()' is deprecated. Use the free-standing one instead.")
     def ongoing_drags(*, window=None) -> Iterator['KXDraggableBehavior']:
         if window is None:
             from kivy.core.window import Window
