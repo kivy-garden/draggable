@@ -86,9 +86,9 @@ def _create_spacer(**kwargs):
     with spacer.canvas:
         color = kwargs.get('color', None)
         if color is None:
-            color_inst = Color(.2, .2, .2, .7)
+            Color(.2, .2, .2, .7)
         else:
-            color_inst = Color(*rgba(color))
+            Color(*rgba(color))
         rect_inst = Rectangle(size=spacer.size)
     spacer.bind(
         pos=lambda __, value: setattr(rect_inst, 'pos', value),

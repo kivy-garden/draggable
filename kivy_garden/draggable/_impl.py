@@ -105,10 +105,7 @@ class KXDraggableBehavior:
     '''(read-only)'''
 
     # default value of the instance attributes
-    _drag_task = ak.Task(
-        ak.sleep_forever(),
-        name=r"KXDraggableBehavior's dummy task",
-    )
+    _drag_task = ak.dummy_task
 
     @staticmethod
     @deprecated(msg=r"'KXDraggableBehavior.ongoing_drags()' is deprecated. Use the free-standing one instead.")
