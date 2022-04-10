@@ -38,8 +38,7 @@ BoxLayout:
     Widget:
         size_hint_x: .1
 
-    # use RelativeLayout just to make sure the coordinates are properly
-    # transformed.
+    # use RelativeLayout just to confirm the coordinates are properly transformed.
     RelativeLayout:
         GridLayout:
             id: board
@@ -55,10 +54,12 @@ BoxLayout:
         spacing: '80dp'
         RelativeLayout:  # use RelativeLayout just ...
             Deck:
+                board: board
                 text: 'numbers'
                 font_size: '20sp'
                 text_iter: (str(i) for i in range(10))
         Deck:
+            board: board
             text: 'letters'
             font_size: '20sp'
             text_iter: iter(ascii_uppercase)
@@ -81,11 +82,13 @@ class Card(KXDraggableBehavior, Label):
 
 class Deck(Label):
     text_iter = ObjectProperty()
+    board = ObjectProperty()
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
             try:
-                Card(text=next(self.text_iter)).drag_start_from_other_widget(self, touch)
+                card = Card(text=next(self.text_iter), size=self.board.children[0].size)
+                card.drag_start_from_existing_touch(touch, self)
             except StopIteration:
                 pass
             return True
