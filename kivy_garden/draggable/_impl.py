@@ -24,13 +24,12 @@ __all__ = (
     'save_widget_location', 'restore_widget_location', 'DragContext',
     'ongoing_drags',
 )
-from typing import List, Tuple, Union, Iterator
+from typing import List, Tuple, Union
 from contextlib import contextmanager
 from inspect import isawaitable
 from dataclasses import dataclass
 
 from kivy.config import Config
-from kivy.utils import deprecated
 from kivy.properties import (
     BooleanProperty, ListProperty, StringProperty, NumericProperty,
 )
@@ -73,15 +72,6 @@ class DragContext:
     'started', 'succeeded', 'failed' or 'cancelled'.
     '''
 
-    @property
-    @deprecated(
-        msg=r"'DragContext.cancelled' isdeprecated. Use '.state' instead.")
-    def cancelled(self) -> bool:
-        return self.state == 'cancelled'
-    '''This property exists only for backward compatibility.
-    Use ``state`` instead.
-    '''
-
 
 class KXDraggableBehavior:
     __events__ = (
@@ -106,17 +96,6 @@ class KXDraggableBehavior:
 
     # default value of the instance attributes
     _drag_task = ak.dummy_task
-
-    @staticmethod
-    @deprecated(msg=r"'KXDraggableBehavior.ongoing_drags()' is deprecated. Use the free-standing one instead.")
-    def ongoing_drags(*, window=None) -> Iterator['KXDraggableBehavior']:
-        if window is None:
-            from kivy.core.window import Window
-            window = Window
-        return (
-            c for c in window.children
-            if isinstance(c, KXDraggableBehavior) and c.is_being_dragged
-        )
 
     @property
     def drag_context(self) -> Union[None, DragContext]:
@@ -382,11 +361,6 @@ class KXReorderableBehavior:
 
     This property can be changed only when there is no ongoing drag.
     '''
-
-    @classmethod
-    @deprecated(msg=r"KXReorderableBehavior.create_spacer() is deprecated,")
-    def create_spacer(cls, **kwargs):
-        return _create_spacer(**kwargs)
 
     def __init__(self, **kwargs):
         self._active_spacers = []
