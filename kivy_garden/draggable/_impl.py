@@ -171,7 +171,7 @@ class KXDraggableBehavior:
         Arguments
         ---------
 
-        * ``touch`` ... The touch that'll drag the ``self``.
+        * ``touch`` ... A touch that is going to drag me.
         * ``touch_receiver`` ... The widget that received the ``touch``.
         '''
         if touch.time_end != -1:

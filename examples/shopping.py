@@ -193,7 +193,7 @@ class SHMain(F.BoxLayout):
 
             # download images
             with ThreadPoolExecutor() as executer:
-                with requests.Session() as session:  # The Session object may not be thread-safe so it's probably better not to use it...
+                with requests.Session() as session:  # The Session object may not be thread-safe so it's probably better not to share it between threads...
                     async def download_one_image(name, image_url) -> Tuple[bytes, str]:
                         image = await ak.run_in_executer(lambda: session.get(image_url).content, executer)
                         return (image, name)
