@@ -166,7 +166,7 @@ class KXDraggableBehavior:
                 return False
         return True
 
-    def drag_start_from_existing_touch(self, touch, touch_receiver: Widget):
+    def drag_start_from_others_touch(self, touch, touch_receiver: Widget):
         '''
         Arguments
         ---------
