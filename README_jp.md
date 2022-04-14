@@ -78,7 +78,7 @@ class Deck(Widget):
     '''山札'''
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
-            Card(...).drag_start_from_others_touch(touch, self)
+            Card(...).drag_start_from_others_touch(self, touch)
 ```
 
 ## 自由に振る舞いを変える

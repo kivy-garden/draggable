@@ -166,13 +166,13 @@ class KXDraggableBehavior:
                 return False
         return True
 
-    def drag_start_from_others_touch(self, touch, touch_receiver: Widget):
+    def drag_start_from_others_touch(self, touch_receiver: Widget, touch):
         '''
         Arguments
         ---------
 
+        * ``touch_receiver`` ... A widget that received the ``touch``.
         * ``touch`` ... A touch that is going to drag me.
-        * ``touch_receiver`` ... The widget that received the ``touch``.
         '''
         if touch.time_end != -1:
             return

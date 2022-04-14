@@ -88,7 +88,7 @@ class Deck(Label):
         if self.collide_point(*touch.opos):
             try:
                 card = Card(text=next(self.text_iter), size=self.board.children[0].size)
-                card.drag_start_from_others_touch(touch, self)
+                card.drag_start_from_others_touch(self, touch)
             except StopIteration:
                 pass
             return True
