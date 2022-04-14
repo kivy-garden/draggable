@@ -68,7 +68,7 @@ class Card(KXDraggableBehavior, Widget):
 class Deck(Widget):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
-            Card(...).drag_start_from_other_widget(self, touch)
+            Card(...).drag_start_from_others_touch(touch, self)
 ```
 
 ## Customization
