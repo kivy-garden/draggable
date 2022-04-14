@@ -68,7 +68,7 @@ dragを引き起こすwidgetとdragされるwidgetは基本同じである。
 - dragを引き起こすwidget(山札)と
 - dragされるwidget(山札から引かれた札)
 
-が別である状況では`draggable.drag_start_from_other_widget()`が使える。
+が別である状況では`draggable.drag_start_from_others_touch()`が使える。
 
 ```python
 class Card(KXDraggableBehavior, Widget):
@@ -78,7 +78,7 @@ class Deck(Widget):
     '''山札'''
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
-            Card(...).drag_start_from_other_widget(self, touch)
+            Card(...).drag_start_from_others_touch(self, touch)
 ```
 
 ## 自由に振る舞いを変える
