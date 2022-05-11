@@ -1,6 +1,6 @@
 __all__ = (
     'KXDraggableBehavior', 'KXDroppableBehavior', 'KXReorderableBehavior',
-    'ongoing_drags'
+    'ongoing_drags',
 )
 from typing import List, Tuple, Union
 from inspect import isawaitable
