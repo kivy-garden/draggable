@@ -1,5 +1,5 @@
-'''Alternative version of 'customizing_animation.py'. This one dynamically
-adds/removes graphics instructions.
+'''Alternative version of 'customizing_animation.py'. This one adds graphics instructions only while they're needed,
+requires less bindings. Thus probably more efficient.
 '''
 
 
@@ -78,10 +78,10 @@ class MyDraggable(KXDraggableBehavior, Label):
             ctx = self.drag_context
             self.parent.remove_widget(self)
             ctx.droppable.add_widget(self)
-            await ak.sleep(0)  # wait for the completion of layout
+            await ak.sleep(0)  # wait for the layout to complete
             scale.origin = self.center
-            await ak.animate(scale, d=.1, x=.6, y=.6),
-            await ak.animate(scale, d=.1, x=1., y=1.),
+            await ak.animate(scale, d=.1, x=.6, y=.6)
+            await ak.animate(scale, d=.1, x=1., y=1.)
         finally:
             cb.remove(push_mat)
             cb.remove(scale)
