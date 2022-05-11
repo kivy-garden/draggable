@@ -381,7 +381,7 @@ class KXReorderableBehavior:
 
     def on_spacer_widgets(self, __, spacer_widgets):
         if self._active_spacers:
-            raise ak.InvalidStateError("Do not change the 'spacer_widgets' when there is an ongoing drag.")
+            raise Exception("Do not change the 'spacer_widgets' when there is an ongoing drag.")
         self._inactive_spacers = [w.__self__ for w in spacer_widgets]
 
     def get_widget_under_drag(self, x, y) -> Tuple[Widget, int]:
