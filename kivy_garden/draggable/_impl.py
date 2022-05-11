@@ -1,38 +1,13 @@
-'''
-notes for maintainers
----------------------
-
-KXDraggableBehaviorがTaskを作る際に
-
-.. code-block::
-
-   self._drag_task = ak.start(Task(...))
-
-ではなく
-
-.. code-block::
-
-   self._drag_task = ak.Task(...)
-   ak.start(self._drag_task)
-
-としているのは、前者だと ``on_drag_start`` event 時にdraggable.cancel()が呼ばれると
-代入前の古い ``self._drag_task`` への操作になってしまう為。
-'''
-
 __all__ = (
     'KXDraggableBehavior', 'KXDroppableBehavior', 'KXReorderableBehavior',
-    'save_widget_location', 'restore_widget_location', 'DragContext',
-    'ongoing_drags',
+    'ongoing_drags'
 )
 from typing import List, Tuple, Union
-from contextlib import contextmanager
 from inspect import isawaitable
 from dataclasses import dataclass
 
 from kivy.config import Config
-from kivy.properties import (
-    BooleanProperty, ListProperty, StringProperty, NumericProperty,
-)
+from kivy.properties import BooleanProperty, ListProperty, StringProperty, NumericProperty
 from kivy.clock import Clock
 from kivy.factory import Factory
 from kivy.uix.widget import Widget
@@ -59,12 +34,9 @@ class DragContext:
     '''
 
     original_location: dict = None
-    '''(read-only) Where the draggable came from. Can be passed to
-    ``restore_widget_location()``.
-    '''
+    '''(read-only) Where the draggable came from. This can be passed to ``restore_widget_location()``. '''
 
-    droppable: Union[None, 'KXDroppableBehavior', 'KXReorderableBehavior'] \
-        = None
+    droppable: Union[None, 'KXDroppableBehavior', 'KXReorderableBehavior'] = None
     '''(read-only) The widget where the draggable dropped to.'''
 
     state: str = 'started'
@@ -88,14 +60,11 @@ class KXDraggableBehavior:
 
     drag_enabled = BooleanProperty(True)
     '''Indicates whether this draggable can be dragged or not. Changing this
-    doesn't affect ongoing drag.
+    doesn't affect ongoing drag. Call `drag_cancel()` if you want to do that.
     '''
 
     is_being_dragged = BooleanProperty(False)
     '''(read-only)'''
-
-    # default value of the instance attributes
-    _drag_task = ak.dummy_task
 
     @property
     def drag_context(self) -> Union[None, DragContext]:
@@ -108,6 +77,7 @@ class KXDraggableBehavior:
         self._drag_task.cancel()
 
     def __init__(self, **kwargs):
+        self._drag_task = ak.dummy_task
         self._drag_ctx = None
         super().__init__(**kwargs)
         self.__ud_key = 'KXDraggableBehavior.' + str(self.uid)
@@ -128,9 +98,7 @@ class KXDraggableBehavior:
             if self.drag_timeout:
                 ak.start(self._see_if_a_touch_actually_is_a_dragging_gesture(touch))
             else:
-                self._drag_task.cancel()
-                self._drag_task = ak.Task(self._treat_a_touch_as_a_drag(touch))
-                ak.start(self._drag_task)
+                ak.start(self._treat_a_touch_as_a_drag(touch))
             return True
         else:
             touch.ud[self.__ud_key] = None
@@ -144,17 +112,15 @@ class KXDraggableBehavior:
         if tasks[0].done:
             # The given touch is a dragging gesture.
             if self._can_be_dragged:
-                self._drag_task.cancel()
-                self._drag_task = ak.Task(self._treat_a_touch_as_a_drag(touch, do_transform=True))
-                ak.start(self._drag_task)
+                await self._treat_a_touch_as_a_drag(touch, do_transform=True)
             else:
-                ak.start(self._simulate_a_normal_touch(touch, do_transform=True))
+                await self._simulate_a_normal_touch(touch, do_transform=True)
         else:
             # The given touch is not a dragging gesture.
-            ak.start(self._simulate_a_normal_touch(touch, do_touch_up=tasks[1].result))
+            await self._simulate_a_normal_touch(touch, do_touch_up=tasks[1].result)
 
     async def _true_when_a_touch_ended_false_when_it_moved_too_much(self, touch):
-        # assigning to a local variable might improve performance
+        # LOAD_FAST
         abs_ = abs
         drag_distance = self.drag_distance
 
@@ -177,9 +143,7 @@ class KXDraggableBehavior:
         if touch.time_end != -1:
             return
         touch.ud[self.__ud_key] = None
-        self._drag_task.cancel()
-        self._drag_task = ak.Task(self._treat_a_touch_as_a_drag(touch, touch_receiver=touch_receiver))
-        ak.start(self._drag_task)
+        ak.start(self._treat_a_touch_as_a_drag(touch, touch_receiver=touch_receiver))
 
     async def _treat_a_touch_as_a_drag(self, touch, *, do_transform=False, touch_receiver=None):
         self.is_being_dragged = True
@@ -226,6 +190,11 @@ class KXDraggableBehavior:
             touch_ud['kivyx_drag_cls'] = self.drag_cls
             touch_ud['kivyx_draggable'] = self
 
+            # store the task object so that the user can cancel it
+            self._drag_task.cancel()
+            self._drag_task = await ak.get_current_task()
+
+            # actual dragging process
             self.dispatch('on_drag_start', touch)
             async for __ in ak.rest_of_touch_moves(self, touch):
                 self.x = touch.x - offset_x
@@ -244,9 +213,7 @@ class KXDraggableBehavior:
             async with ak.cancel_protection():
                 if isawaitable(r):
                     await r
-                # I cannot remember why this 'ak.sleep()' exists.
-                # It might be unnecessary.
-                await ak.sleep(-1)
+                await ak.sleep(-1)  # This is necessary in order to work with Magnet iirc.
         except GeneratorExit:
             ctx.state = 'cancelled'
             self.dispatch('on_drag_cancel', touch)
@@ -424,7 +391,7 @@ class KXReorderableBehavior:
         spacer = self._inactive_spacers.pop()
         self._active_spacers.append(spacer)
 
-        # assigning to a local variable might improve performance
+        # LOAD_FAST
         collide_point = self.collide_point
         get_drop_insertion_index_move = self.get_drop_insertion_index_move
         remove_widget = self.remove_widget
