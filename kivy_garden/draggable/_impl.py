@@ -204,7 +204,7 @@ class KXDraggableBehavior:
             await ak.sleep(-1)
 
             ctx.droppable = droppable = touch_ud.get('kivyx_droppable', None)
-            if droppable is None or (not droppable.accepts_drag(touch, self)):
+            if droppable is None or (not droppable.accepts_drag(touch, ctx, self)):
                 ctx.state = 'failed'
                 r = self.dispatch('on_drag_fail', touch, ctx)
             else:
@@ -307,7 +307,7 @@ class KXDroppableBehavior:
                 touch_ud.setdefault('kivyx_droppable', self)
         return r
 
-    def accepts_drag(self, touch, draggable) -> bool:
+    def accepts_drag(self, touch, ctx: DragContext, draggable: KXDraggableBehavior) -> bool:
         '''Determines whether the droppable is willing to accept the drag'''
         return True
 
@@ -330,7 +330,7 @@ class KXReorderableBehavior:
         super().__init__(**kwargs)
         self.__ud_key = 'KXReorderableBehavior.' + str(self.uid)
 
-    def accepts_drag(self, touch, draggable) -> bool:
+    def accepts_drag(self, touch, ctx: DragContext, draggable: KXDraggableBehavior) -> bool:
         '''Determines whether the reorderable is willing to accept the drag'''
         return True
 

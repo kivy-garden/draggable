@@ -68,7 +68,7 @@ BoxLayout:
 
 
 class Cell(KXDroppableBehavior, FloatLayout):
-    def accepts_drag(self, touch, draggable) -> bool:
+    def accepts_drag(self, touch, ctx, draggable) -> bool:
         return not self.children
 
     def add_widget(self, widget, *args, **kwargs):
