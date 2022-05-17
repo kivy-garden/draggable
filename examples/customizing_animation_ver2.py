@@ -53,7 +53,7 @@ class MyDraggable(KXDraggableBehavior, Label):
                 self.opacity = 1. - p
             self.parent.remove_widget(self)
 
-    async def on_drag_success(self, touch, ctx):
+    async def on_drag_succeed(self, touch, ctx):
         self.parent.remove_widget(self)
         ctx.droppable.add_widget(self)
         await ak.sleep(0)  # wait for the layout to complete

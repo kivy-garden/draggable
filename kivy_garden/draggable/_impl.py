@@ -39,7 +39,7 @@ class DragContext:
 
     droppable: Union[None, 'KXDroppableBehavior', 'KXReorderableBehavior'] = None
     '''(read-only) The widget where the draggable dropped to. This is always None on_drag_start/on_drag_cancel, and is
-    always a widget on_drag_success, and can be either on_drag_fail.'''
+    always a widget on_drag_succeed, and can be either on_drag_fail/on_drag_end.'''
 
     state: str = 'started'
     '''(read-only) The current state of the drag. One of the following:
@@ -49,7 +49,7 @@ class DragContext:
 
 class KXDraggableBehavior:
     __events__ = (
-        'on_drag_start', 'on_drag_end', 'on_drag_success', 'on_drag_fail',
+        'on_drag_start', 'on_drag_end', 'on_drag_succeed', 'on_drag_fail',
         'on_drag_cancel',
     )
 
@@ -205,7 +205,7 @@ class KXDraggableBehavior:
                 r = self.dispatch('on_drag_fail', touch, ctx)
             else:
                 ctx.state = 'succeeded'
-                r = self.dispatch('on_drag_success', touch, ctx)
+                r = self.dispatch('on_drag_succeed', touch, ctx)
             async with ak.cancel_protection():
                 if isawaitable(r):
                     await r
@@ -258,7 +258,7 @@ class KXDraggableBehavior:
     def on_drag_end(self, touch, ctx: DragContext):
         pass
 
-    def on_drag_success(self, touch, ctx: DragContext):
+    def on_drag_succeed(self, touch, ctx: DragContext):
         original_location = ctx.original_location
         self.parent.remove_widget(self)
         self.size_hint_x = original_location['size_hint_x']

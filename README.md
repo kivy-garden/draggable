@@ -80,7 +80,7 @@ class Deck(Widget):
 
 ## Customization
 
-What draggables do `on_drag_success` / `on_drag_fail` / `on_drag_cancel` are completely customizable.
+What draggables do `on_drag_succeed` / `on_drag_fail` / `on_drag_cancel` are completely customizable.
 For example, by default, when a drag fails, the draggable will go back to where it came from with little animation.
 This is because the default handler of `on_drag_fail` is implemented as follows:
 
@@ -117,14 +117,14 @@ overwrite the handler as follows:
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
-    async def on_drag_success(self, touch, ctx):
+    async def on_drag_succeed(self, touch, ctx):
         import asynckivy
         await asynckivy.animate(self, opacity=0)
         self.parent.remove_widget(self)
 ```
 
 Just like that, you have free rein to change those behaviors.
-But note that **only the default handler of `on_drag_success` and `on_drag_fail`
+But note that **only the default handler of `on_drag_succeed` and `on_drag_fail`
 can be an async function. Those two only.**
 
 You might say "What's the point of implementing a default handler as an async function,

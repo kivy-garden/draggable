@@ -112,13 +112,13 @@ class MyDraggable(KXDraggableBehavior, Widget):
 import asynckivy as ak
 
 class MyDraggable(KXDraggableBehavior, Widget):
-    async def on_drag_success(self, touch, ctx):
+    async def on_drag_succeed(self, touch, ctx):
         await ak.animate(self, opacity=0)
         self.parent.remove_widget(self)
 ```
 
 このようにdefault handlerを上書きすることで自由に振るまいを変えられる。
-ただし**async関数になれるのは`on_drag_success`と`on_drag_fail`のdefault handlerだけ**なので注意されたし。
+ただし**async関数になれるのは`on_drag_succeed`と`on_drag_fail`のdefault handlerだけ**なので注意されたし。
 
 ここで
 
@@ -128,13 +128,13 @@ class MyDraggable(KXDraggableBehavior, Widget):
 の違いについて説明する。
 前者ではasync関数のcodeがdrag処理の間に挟み込まれ、codeが`on_drag_end`が起こるより前に完遂される事が保証されるのに対し、
 後者ではcodeがdrag処理とは独立して進むので`on_drag_end`が起こるより前に完了する保証はない。
-なのでもし上の`on_drag_success`の例を後者のやり方で実装すると
+なのでもし上の`on_drag_succeed`の例を後者のやり方で実装すると
 
 ```python
 import asynckivy as ak
 
 class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_success(self, touch, ctx):
+    def on_drag_succeed(self, touch, ctx):
         ak.start(self._fade_out(touch))
 
     async def _fade_out(self, touch):
