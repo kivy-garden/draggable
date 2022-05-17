@@ -37,7 +37,8 @@ class DragContext:
     '''(read-only) Where the draggable came from. This can be passed to ``restore_widget_location()``. '''
 
     droppable: Union[None, 'KXDroppableBehavior', 'KXReorderableBehavior'] = None
-    '''(read-only) The widget where the draggable dropped to.'''
+    '''(read-only) The widget where the draggable dropped to. This is always None on_drag_start/on_drag_cancel, and is
+    always a widget on_drag_success, and can be either on_drag_fail.'''
 
     state: str = 'started'
     '''(read-only) The current state of the drag. One of the following:
