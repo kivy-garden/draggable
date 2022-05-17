@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kivy_garden.draggable"
-version = "0.1.1"
+version = "0.1.2"
 description = "Drag & Drop Extension for Kivy"
 authors = ["Nattōsai Mitō <flow4re2c@gmail.com>"]
 license = "MIT"
