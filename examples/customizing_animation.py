@@ -1,5 +1,5 @@
 '''This example shows how to customize animations by overwriting
-``on_drag_fail()`` and ``on_drag_success()``.
+``on_drag_fail()`` and ``on_drag_succeed()``.
 '''
 
 
@@ -60,7 +60,7 @@ class MyDraggable(KXDraggableBehavior, Label):
         await ak.animate(self, _angle=720, opacity=0, duration=.4)
         self.parent.remove_widget(self)
 
-    async def on_drag_success(self, touch, ctx):
+    async def on_drag_succeed(self, touch, ctx):
         self.parent.remove_widget(self)
         ctx.droppable.add_widget(self)
         abs_ = abs
