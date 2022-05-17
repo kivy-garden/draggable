@@ -94,15 +94,15 @@ dragが失敗/成功/中止した時に何をするかは完全にあなたに�
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_fail(self, touch, draggable):
-        restore_widget_location(self, self.drag_context.original_location)
+    def on_drag_fail(self, touch, ctx):
+        restore_widget_location(self, ctx.original_location)
 ```
 
 また何もせずにその場に残って欲しいなら以下のようにすれば良い。
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_fail(self, touch, draggable):
+    def on_drag_fail(self, touch, ctx):
         pass
 ```
 
@@ -112,7 +112,7 @@ class MyDraggable(KXDraggableBehavior, Widget):
 import asynckivy as ak
 
 class MyDraggable(KXDraggableBehavior, Widget):
-    async def on_drag_success(self, touch, draggable):
+    async def on_drag_success(self, touch, ctx):
         await ak.animate(self, opacity=0)
         self.parent.remove_widget(self)
 ```
@@ -134,10 +134,10 @@ class MyDraggable(KXDraggableBehavior, Widget):
 import asynckivy as ak
 
 class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_success(self, touch, draggable):
-        ak.start(self._fade_out(touch, draggable))
+    def on_drag_success(self, touch, ctx):
+        ak.start(self._fade_out(touch))
 
-    async def _fade_out(self, touch, draggable):
+    async def _fade_out(self, touch):
         await ak.animate(self, opacity=0)
         self.parent.remove_widget(self)
 ```

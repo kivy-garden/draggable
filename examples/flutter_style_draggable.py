@@ -62,27 +62,27 @@ class FlutterStyleDraggable(KXDraggableBehavior, ScreenManager):
     def __on_is_being_dragged(self, value):
         self.current = 'feedback' if value else 'child'
 
-    def on_drag_start(self, touch):
+    def on_drag_start(self, touch, ctx):
         if self.has_screen('childWhenDragging'):
             restore_widget_location(
                 self.get_screen('childWhenDragging'),
-                self.drag_context.original_location,
+                ctx.original_location,
             )
-        return super().on_drag_start(touch)
+        return super().on_drag_start(touch, ctx)
 
-    def on_drag_fail(self, touch):
+    def on_drag_fail(self, touch, ctx):
         if self.has_screen('childWhenDragging'):
             w = self.get_screen('childWhenDragging')
             if w.parent is not None:
                 w.parent.remove_widget(w)
-        return super().on_drag_fail(touch)
+        return super().on_drag_fail(touch, ctx)
 
-    def on_drag_success(self, touch):
+    def on_drag_success(self, touch, ctx):
         if self.has_screen('childWhenDragging'):
             w = self.get_screen('childWhenDragging')
             if w.parent is not None:
                 w.parent.remove_widget(w)
-        return super().on_drag_success(touch)
+        return super().on_drag_success(touch, ctx)
 
 
 class Cell(KXDroppableBehavior, FloatLayout):

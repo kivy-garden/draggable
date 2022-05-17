@@ -86,8 +86,7 @@ This is because the default handler of `on_drag_fail` is implemented as follows:
 
 ```python
 class KXDraggableBehavior:
-    async def on_drag_fail(self, touch):
-        ctx = self.drag_context
+    async def on_drag_fail(self, touch, ctx):
         await ak.animate(
             self, duration=.1,
             x=ctx.original_pos_win[0],
@@ -100,15 +99,15 @@ If you don't need the animation, and want the draggable to go back instantly, ov
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_fail(self, touch):
-        restore_widget_location(self, self.drag_context.original_location)
+    def on_drag_fail(self, touch, ctx):
+        restore_widget_location(self, ctx.original_location)
 ```
 
 Or if you want the draggable to not go back, and want it to stay the current position, overwrite the handler as follows:
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_fail(self, touch):
+    def on_drag_fail(self, touch, ctx):
         pass
 ```
 
@@ -118,7 +117,7 @@ overwrite the handler as follows:
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
-    async def on_drag_success(self, touch):
+    async def on_drag_success(self, touch, ctx):
         import asynckivy
         await asynckivy.animate(self, opacity=0)
         self.parent.remove_widget(self)
