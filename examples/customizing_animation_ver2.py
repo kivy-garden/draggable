@@ -63,7 +63,7 @@ class MyDraggable(KXDraggableBehavior, Label):
             cb.remove(rotate)
             ca.remove(pop_mat)
 
-    async def on_drag_success(self, touch, ctx):
+    async def on_drag_succeed(self, touch, ctx):
         from kivy.graphics import PushMatrix, PopMatrix, Scale
         import asynckivy as ak
         push_mat = PushMatrix()
