@@ -82,7 +82,7 @@ BoxLayout:
 
 
 class MyDraggable(KXDraggableBehavior, Label):
-    def on_drag_success(self, touch):
+    def on_drag_success(self, touch, ctx):
         self.parent.remove_widget(self)
 
 

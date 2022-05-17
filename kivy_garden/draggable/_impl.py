@@ -196,7 +196,7 @@ class KXDraggableBehavior:
             self._drag_task = await ak.get_current_task()
 
             # actual dragging process
-            self.dispatch('on_drag_start', touch)
+            self.dispatch('on_drag_start', touch, ctx)
             async for __ in ak.rest_of_touch_moves(self, touch):
                 self.x = touch.x - offset_x
                 self.y = touch.y - offset_y
@@ -207,20 +207,20 @@ class KXDraggableBehavior:
             ctx.droppable = droppable = touch_ud.get('kivyx_droppable', None)
             if droppable is None or (not droppable.accepts_drag(touch, self)):
                 ctx.state = 'failed'
-                r = self.dispatch('on_drag_fail', touch)
+                r = self.dispatch('on_drag_fail', touch, ctx)
             else:
                 ctx.state = 'succeeded'
-                r = self.dispatch('on_drag_success', touch)
+                r = self.dispatch('on_drag_success', touch, ctx)
             async with ak.cancel_protection():
                 if isawaitable(r):
                     await r
                 await ak.sleep(-1)  # This is necessary in order to work with Magnet iirc.
         except GeneratorExit:
             ctx.state = 'cancelled'
-            self.dispatch('on_drag_cancel', touch)
+            self.dispatch('on_drag_cancel', touch, ctx)
             raise
         finally:
-            self.dispatch('on_drag_end', touch)
+            self.dispatch('on_drag_end', touch, ctx)
             self.is_being_dragged = False
             self._drag_ctx = None
             touch_ud['kivyx_droppable'] = None
@@ -263,14 +263,13 @@ class KXDraggableBehavior:
         touch.grab_current = None
         return
 
-    def on_drag_start(self, touch):
+    def on_drag_start(self, touch, ctx: DragContext):
         pass
 
-    def on_drag_end(self, touch):
+    def on_drag_end(self, touch, ctx: DragContext):
         pass
 
-    def on_drag_success(self, touch):
-        ctx = self._drag_ctx
+    def on_drag_success(self, touch, ctx: DragContext):
         original_location = ctx.original_location
         self.parent.remove_widget(self)
         self.size_hint_x = original_location['size_hint_x']
@@ -278,8 +277,7 @@ class KXDraggableBehavior:
         self.pos_hint = original_location['pos_hint']
         ctx.droppable.add_widget(self, index=touch.ud.get('kivyx_droppable_index', 0))
 
-    async def on_drag_fail(self, touch):
-        ctx = self._drag_ctx
+    async def on_drag_fail(self, touch, ctx: DragContext):
         await ak.animate(
             self, d=.1,
             x=ctx.original_pos_win[0],
@@ -287,8 +285,8 @@ class KXDraggableBehavior:
         )
         restore_widget_location(self, ctx.original_location)
 
-    def on_drag_cancel(self, touch):
-        restore_widget_location(self, self._drag_ctx.original_location)
+    def on_drag_cancel(self, touch, ctx: DragContext):
+        restore_widget_location(self, ctx.original_location)
 
 
 def ongoing_drags(*, window=None) -> List[KXDraggableBehavior]:

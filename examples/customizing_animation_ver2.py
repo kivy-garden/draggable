@@ -41,7 +41,7 @@ GridLayout:
 
 
 class MyDraggable(KXDraggableBehavior, Label):
-    async def on_drag_fail(self, touch):
+    async def on_drag_fail(self, touch, ctx):
         from kivy.graphics import PushMatrix, PopMatrix, Rotate
         import asynckivy as ak
         push_mat = PushMatrix()
@@ -63,7 +63,7 @@ class MyDraggable(KXDraggableBehavior, Label):
             cb.remove(rotate)
             ca.remove(pop_mat)
 
-    async def on_drag_success(self, touch):
+    async def on_drag_success(self, touch, ctx):
         from kivy.graphics import PushMatrix, PopMatrix, Scale
         import asynckivy as ak
         push_mat = PushMatrix()
@@ -75,7 +75,6 @@ class MyDraggable(KXDraggableBehavior, Label):
             cb.add(push_mat)
             cb.add(scale)
             ca.add(pop_mat)
-            ctx = self.drag_context
             self.parent.remove_widget(self)
             ctx.droppable.add_widget(self)
             await ak.sleep(0)  # wait for the layout to complete
