@@ -121,32 +121,33 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
 
     async def _watch_touch(self, touch):
         draggable = touch.ud['kivyx_draggable']
+        ctx = touch.ud['kivyx_drag_ctx']
         collide_point = self.collide_point
 
-        self.dispatch('on_drag_enter', touch, draggable)
+        self.dispatch('on_drag_enter', touch, ctx, draggable)
         try:
             async for __ in ak.rest_of_touch_moves(self, touch):
                 if not collide_point(*touch.pos):
                     return
         finally:
-            self.dispatch('on_drag_leave', touch, draggable)
+            self.dispatch('on_drag_leave', touch, ctx, draggable)
             del touch.ud[self.__ud_key]
 
-    def on_drag_enter(self, touch, draggable):
+    def on_drag_enter(self, touch, ctx, draggable):
         pass
 
-    def on_drag_leave(self, touch, draggable):
+    def on_drag_leave(self, touch, ctx, draggable):
         pass
 
 
 class MyDroppable(ReactiveDroppableBehavior, Label):
     n_ongoing_drags_inside = NumericProperty(0)
 
-    def on_drag_enter(self, touch, draggable):
+    def on_drag_enter(self, touch, ctx, draggable):
         self.n_ongoing_drags_inside += 1
         print(f"{draggable.text} entered {self.text}.")
 
-    def on_drag_leave(self, touch, draggable):
+    def on_drag_leave(self, touch, ctx, draggable):
         self.n_ongoing_drags_inside -= 1
         print(f"{draggable.text} left {self.text}.")
 
