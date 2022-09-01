@@ -4,26 +4,34 @@ __all__ = (
 )
 
 from weakref import ref
-from contextlib import contextmanager
 from copy import deepcopy
 
 
-@contextmanager
-def temp_transform(touch):
-    touch.push()
-    try:
-        yield
-    finally:
-        touch.pop()
+class temp_transform:
+    __slots__ = ('_touch', )
+
+    def __init__(self, touch):
+        self._touch = touch
+
+    def __enter__(self):
+        self._touch.push()
+
+    def __exit__(self, *args):
+        self._touch.pop()
 
 
-@contextmanager
-def temp_grab_current(touch):
-    original = touch.grab_current
-    try:
-        yield
-    finally:
-        touch.grab_current = original
+class temp_grab_current:
+    __slots__ = ('_touch', '_original', )
+
+    def __init__(self, touch):
+        self._touch = touch
+        self._original = touch.grab_current
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *args):
+        self._touch.grab_current = self._original
 
 
 _shallow_copyable_property_names = (
