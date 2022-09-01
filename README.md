@@ -82,7 +82,7 @@ class KXDraggableBehavior:
     async def on_drag_fail(self, touch):
         ctx = self.drag_context
         await ak.animate(
-            self, d=.1,
+            self, duration=.1,
             x=ctx.original_pos_win[0],
             y=ctx.original_pos_win[1],
         )

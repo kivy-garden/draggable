@@ -57,7 +57,7 @@ class MyDraggable(KXDraggableBehavior, Label):
     _scale = NumericProperty(1.)
 
     async def on_drag_fail(self, touch):
-        await ak.animate(self, d=.4, _angle=720, opacity=0)
+        await ak.animate(self, _angle=720, opacity=0, duration=.4)
         self.parent.remove_widget(self)
 
     async def on_drag_success(self, touch):
