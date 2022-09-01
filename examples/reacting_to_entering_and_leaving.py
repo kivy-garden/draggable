@@ -121,9 +121,10 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
 
         self.dispatch('on_drag_enter', touch, draggable)
         try:
-            async for __ in ak.rest_of_touch_moves(self, touch):
-                if not collide_point(*touch.pos):
-                    return
+            async with ak.watch_touch(self, touch) as is_touch_move:
+                while await is_touch_move():
+                    if not collide_point(*touch.pos):
+                        return
         finally:
             self.dispatch('on_drag_leave', touch, draggable)
             del touch.ud[self.__ud_key]
