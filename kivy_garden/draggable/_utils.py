@@ -8,13 +8,16 @@ from copy import deepcopy
 
 
 class temp_transform:
-    __slots__ = ('_touch', )
+    __slots__ = ('_touch', '_func')
 
-    def __init__(self, touch):
+    def __init__(self, touch, func):
         self._touch = touch
+        self._func = func
 
     def __enter__(self):
-        self._touch.push()
+        t = self._touch
+        t.push()
+        t.apply_transform_2d(self._func)
 
     def __exit__(self, *args):
         self._touch.pop()
