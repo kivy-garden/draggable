@@ -1,5 +1,5 @@
 from kivy.properties import ObjectProperty
-from kivy.app import runTouchApp
+from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.label import Label
 from kivy.uix.floatlayout import FloatLayout
@@ -38,7 +38,8 @@ BoxLayout:
     Widget:
         size_hint_x: .1
 
-    # use RelativeLayout just to confirm the coordinates are properly transformed.
+    # Put the board inside a RelativeLayout just to confirm the coordinates are properly transformed.
+    # It's not necessary for this example to work.
     RelativeLayout:
         GridLayout:
             id: board
@@ -52,7 +53,7 @@ BoxLayout:
         size_hint_x: .2
         padding: '20dp', '40dp'
         spacing: '80dp'
-        RelativeLayout:  # use RelativeLayout just ...
+        RelativeLayout:  # Put a deck inside a RelativeLayout just ...
             Deck:
                 board: board
                 text: 'numbers'
@@ -86,16 +87,21 @@ class Deck(Label):
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
-            try:
-                card = Card(text=next(self.text_iter), size=self.board.children[0].size)
+            if (text := next(self.text_iter, None)) is not None:
+                card = Card(text=text, size=self.board.children[0].size)
                 card.drag_start_from_others_touch(self, touch)
-            except StopIteration:
-                pass
             return True
 
 
-root = Builder.load_string(KV_CODE)
-board = root.ids.board
-for __ in range(board.cols * board.rows):
-    board.add_widget(Cell())
-runTouchApp(root)
+class SampleApp(App):
+    def build(self):
+        return Builder.load_string(KV_CODE)
+
+    def on_start(self):
+        board = self.root.ids.board
+        for __ in range(board.cols * board.rows):
+            board.add_widget(Cell())
+
+
+if __name__ == '__main__':
+    SampleApp().run()

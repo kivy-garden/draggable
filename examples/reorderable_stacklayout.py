@@ -2,12 +2,12 @@
 When you want to make ``StackLayout`` re-orderable, you may want to disable
 the ``size_hint`` of each child, or may want to limit the maximum size of
 each child, otherwise the layout may be messed up. You can confirm it by
-commenting/uncommenting the last part of this file.
+commenting/uncommenting the ``SampleApp.on_start()``'s body.
 '''
 
 from kivy.lang import Builder
 from kivy.factory import Factory
-from kivy.app import runTouchApp
+from kivy.app import App
 import kivy_garden.draggable
 
 
@@ -42,20 +42,27 @@ def random_size():
     return (uniform(50.0, 150.0), uniform(50.0, 150.0), )
 
 
-root = Builder.load_string(KV_CODE)
-Item = Factory.MyDraggableItem
-Item()
-add_widget = root.ids.layout.add_widget
-for i in range(30):
-    # A (works)
-    add_widget(Item(text=str(i), size=random_size(), size_hint=(None, None)))
+class SampleApp(App):
+    def build(self):
+        return Builder.load_string(KV_CODE)
 
-    # B (works)
-    # add_widget(Item(text=str(i), size_hint_max=random_size()))
+    def on_start(self):
+        Item = Factory.MyDraggableItem
+        Item()
+        add_widget = self.root.ids.layout.add_widget
+        for i in range(30):
+            # A (works)
+            add_widget(Item(text=str(i), size=random_size(), size_hint=(None, None)))
 
-    # C (does not work)
-    # add_widget(Item(text=str(i), size_hint_min=random_size()))
+            # B (works)
+            # add_widget(Item(text=str(i), size_hint_max=random_size()))
 
-    # D (does not work)
-    # add_widget(Item(text=str(i)))
-runTouchApp(root)
+            # C (does not work)
+            # add_widget(Item(text=str(i), size_hint_min=random_size()))
+
+            # D (does not work)
+            # add_widget(Item(text=str(i)))
+
+
+if __name__ == '__main__':
+    SampleApp().run()

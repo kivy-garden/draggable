@@ -6,15 +6,14 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.factory import Factory
 
-from kivy_garden.draggable import (
-    KXDraggableBehavior, restore_widget_location, ongoing_drags,
-)
+from kivy_garden.draggable import ongoing_drags
 
 
 KV_CODE = '''
 #:import create_spacer kivy_garden.draggable._utils._create_spacer
 
 <ReorderableGridLayout@KXReorderableBehavior+GridLayout>:
+
 <DraggableItem@KXDraggableBehavior+Label>:
     drag_cls: 'test'
     drag_timeout: 50
@@ -28,6 +27,7 @@ KV_CODE = '''
         Line:
             width: 2 if root.is_being_dragged else 1
             rectangle: [*self.pos, *self.size, ]
+
 <MyButton@Button>:
     font_size: sp(20)
     size_hint_min_x: self.texture_size[0] + dp(10)
@@ -42,9 +42,7 @@ BoxLayout:
         spacing: 10
         drag_classes: ['test', ]
         cols: 6
-        spacer_widgets:
-            [create_spacer(color=color)
-            for color in "#000044 #002200 #440000".split()]
+        spacer_widgets: [create_spacer(color=color) for color in "#000044 #002200 #440000".split()]
     BoxLayout:
         spacing: 10
         orientation: 'vertical'

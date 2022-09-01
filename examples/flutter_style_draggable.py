@@ -4,14 +4,12 @@ This example shows how to achive the same functionality as Flutter one's
 https://api.flutter.dev/flutter/widgets/Draggable-class.html
 '''
 
-from kivy.app import runTouchApp
+from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import ScreenManager, NoTransition
 
-from kivy_garden.draggable import (
-    KXDroppableBehavior, KXDraggableBehavior, restore_widget_location,
-)
+from kivy_garden.draggable import KXDroppableBehavior, KXDraggableBehavior, restore_widget_location
 
 KV_CODE = '''
 <Cell>:
@@ -97,12 +95,18 @@ class Cell(KXDroppableBehavior, FloatLayout):
         return super().add_widget(widget, *args, **kwargs)
 
 
-root = Builder.load_string(KV_CODE)
-board = root
-for __ in range(board.cols * board.rows):
-    board.add_widget(Cell())
-cells = board.children
-for cell, __ in zip(cells, range(4)):
-    cell.add_widget(FlutterStyleDraggable())
+class SampleApp(App):
+    def build(self):
+        return Builder.load_string(KV_CODE)
 
-runTouchApp(root)
+    def on_start(self):
+        board = self.root
+        for __ in range(board.cols * board.rows):
+            board.add_widget(Cell())
+        cells = board.children
+        for cell, __ in zip(cells, range(4)):
+            cell.add_widget(FlutterStyleDraggable())
+
+
+if __name__ == '__main__':
+    SampleApp().run()

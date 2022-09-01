@@ -3,12 +3,13 @@
 '''
 
 
-from kivy.app import runTouchApp
+from kivy.app import App
 from kivy.lang import Builder
 from kivy.properties import NumericProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 import asynckivy as ak
+from asynckivy import vanim
 
 from kivy_garden.draggable import KXDroppableBehavior, KXDraggableBehavior
 
@@ -63,8 +64,9 @@ class MyDraggable(KXDraggableBehavior, Label):
         ctx = self.drag_context
         self.parent.remove_widget(self)
         ctx.droppable.add_widget(self)
-        await ak.animate(self, d=.1, _scale=.6)
-        await ak.animate(self, d=.1, _scale=1)
+        abs_ = abs
+        async for p in vanim.progress(duration=.2):
+            self._scale = abs_(p * .8 - .4) + .6
 
 
 class Cell(KXDroppableBehavior, FloatLayout):
@@ -77,12 +79,18 @@ class Cell(KXDroppableBehavior, FloatLayout):
         return super().add_widget(widget, *args, **kwargs)
 
 
-root = Builder.load_string(KV_CODE)
-board = root
-for __ in range(board.cols * board.rows):
-    board.add_widget(Cell())
-cells = board.children
-for cell, i in zip(cells, range(4)):
-    cell.add_widget(MyDraggable(text=str(i)))
+class SampleApp(App):
+    def build(self):
+        return Builder.load_string(KV_CODE)
 
-runTouchApp(root)
+    def on_start(self):
+        board = self.root
+        for __ in range(board.cols * board.rows):
+            board.add_widget(Cell())
+        cells = board.children
+        for cell, i in zip(cells, range(4)):
+            cell.add_widget(MyDraggable(text=str(i)))
+
+
+if __name__ == '__main__':
+    SampleApp().run()
