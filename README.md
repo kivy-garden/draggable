@@ -29,7 +29,7 @@ From now on, I use the term `droppable` to refer both `KXReorderableBehavior` an
   milli seconds without traveling more than `draggable.drag_distance` pixels, it will
   be recognized as a dragging gesture.
 - Droppables can handle multiple drags simultaneously.
-- Drag can be cancelled by calling `draggable.drag_cancel()`.
+- Drag can be canceled by calling `draggable.drag_cancel()`.
 - Nested `KXReorderableBehavior` is not officially supported. It may or may
   not work depending on how `drag_classes` and `drag_cls` are set.
 
@@ -41,7 +41,7 @@ Once a drag has started, it will go through the following path.
 
 ## Cancellation
 
-When your app switches a scene, you may want to cancel the all ongoing drags.
+When your app switches a scene, you may want to cancel all the ongoing drags.
 `ongoing_drags()` and `draggable.drag_cancel()` are what you want.
 
 ```python
@@ -57,7 +57,7 @@ def cancel_all_ongoing_drags():
 Let's say you are creating a card game, and there is a deck on the screen.
 Say, you want the deck to emit a card when the user drops a finger on it,
 and want the card to follow the finger until the user lifts it up.
-In this situation, a widget who triggers a drag and a widget who is dragged are different.
+In this situation, a widget that triggers a drag and a widget that is dragged are different.
 You can implement it as follows:
 
 ```python
