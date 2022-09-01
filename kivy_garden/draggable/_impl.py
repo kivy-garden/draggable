@@ -127,11 +127,12 @@ class KXDraggableBehavior:
         drag_distance = self.drag_distance
 
         ox, oy = touch.opos
-        async for __ in ak.rest_of_touch_moves(self, touch):
-            dx = abs_(touch.x - ox)
-            dy = abs_(touch.y - oy)
-            if dy > drag_distance or dx > drag_distance:
-                return False
+        async with ak.watch_touch(self, touch) as is_touch_move:
+            while await is_touch_move():
+                dx = abs_(touch.x - ox)
+                dy = abs_(touch.y - oy)
+                if dy > drag_distance or dx > drag_distance:
+                    return False
         return True
 
     def drag_start_from_others_touch(self, touch_receiver: Widget, touch):
@@ -194,9 +195,10 @@ class KXDraggableBehavior:
 
             # actual dragging process
             self.dispatch('on_drag_start', touch)
-            async for __ in ak.rest_of_touch_moves(self, touch):
-                self.x = touch.x - offset_x
-                self.y = touch.y - offset_y
+            async with ak.watch_touch(self, touch) as is_touch_move:
+                while await is_touch_move():
+                    self.x = touch.x - offset_x
+                    self.y = touch.y - offset_y
 
             # wait for other widgets to react to 'on_touch_up'
             await ak.sleep(-1)
@@ -395,16 +397,17 @@ class KXReorderableBehavior:
                 touch_ud['kivyx_draggable'].drag_context.original_location,
                 ignore_parent=True)
             add_widget(spacer)
-            async for __ in ak.rest_of_touch_moves(self, touch):
-                x, y = touch.pos
-                if collide_point(x, y):
-                    new_idx = get_drop_insertion_index_move(x, y, spacer)
-                    if new_idx is not None:
-                        remove_widget(spacer)
-                        add_widget(spacer, index=new_idx)
-                else:
-                    del touch_ud[self.__ud_key]
-                    return
+            async with ak.watch_touch(self, touch) as is_touch_move:
+                while await is_touch_move():
+                    x, y = touch.pos
+                    if collide_point(x, y):
+                        new_idx = get_drop_insertion_index_move(x, y, spacer)
+                        if new_idx is not None:
+                            remove_widget(spacer)
+                            add_widget(spacer, index=new_idx)
+                    else:
+                        del touch_ud[self.__ud_key]
+                        return
             if 'kivyx_droppable' not in touch_ud:
                 touch_ud['kivyx_droppable'] = self
                 touch_ud['kivyx_droppable_index'] = self.children.index(spacer)
