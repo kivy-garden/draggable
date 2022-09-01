@@ -5,6 +5,7 @@ __all__ = (
 from typing import List, Tuple, Union
 from inspect import isawaitable
 from dataclasses import dataclass
+from contextlib import nullcontext
 
 from kivy.config import Config
 from kivy.properties import BooleanProperty, ListProperty, StringProperty, NumericProperty
@@ -151,13 +152,9 @@ class KXDraggableBehavior:
         try:
             if touch_receiver is None:
                 original_pos_win = self.to_window(*self.pos)
-                if do_transform:
-                    touch.push()
-                    touch.apply_transform_2d(self.parent.to_widget)
-                offset_x = touch.ox - self.x
-                offset_y = touch.oy - self.y
-                if do_transform:
-                    touch.pop()
+                with temp_transform(touch, self.parent.to_widget) if do_transform else nullcontext():
+                    offset_x = touch.ox - self.x
+                    offset_y = touch.oy - self.y
             else:
                 offset_x = self.width * 0.5
                 offset_y = self.height * 0.5
@@ -231,12 +228,8 @@ class KXDraggableBehavior:
         # simulate 'on_touch_down'
         with temp_grab_current(touch):
             touch.grab_current = None
-            if do_transform:
-                touch.push()
-                touch.apply_transform_2d(self.parent.to_widget)
-            super().on_touch_down(touch)
-            if do_transform:
-                touch.pop()
+            with temp_transform(touch, self.parent.to_widget) if do_transform else nullcontext():
+                super().on_touch_down(touch)
 
         if not do_touch_up:
             return
@@ -245,8 +238,7 @@ class KXDraggableBehavior:
         # simulate 'on_touch_up'
         to_widget = self.to_widget if self.parent is None else self.parent.to_widget
         touch.grab_current = None
-        with temp_transform(touch):
-            touch.apply_transform_2d(to_widget)
+        with temp_transform(touch, to_widget):
             super().on_touch_up(touch)
 
         # simulate the grabbed one as well
@@ -256,8 +248,7 @@ class KXDraggableBehavior:
             if x is None:
                 continue
             touch.grab_current = x
-            with temp_transform(touch):
-                touch.apply_transform_2d(x.parent.to_widget)
+            with temp_transform(touch, x.parent.to_widget):
                 x.dispatch('on_touch_up', touch)
 
         touch.grab_current = None
