@@ -2,9 +2,7 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.factory import Factory
 from kivy.clock import Clock
-from kivy.properties import (
-    NumericProperty, StringProperty, BooleanProperty,
-)
+from kivy.properties import NumericProperty, StringProperty, BooleanProperty
 import asynckivy as ak
 
 import kivy_garden.draggable
@@ -19,10 +17,8 @@ class Magnet(Factory.Widget):
     anim_duration = NumericProperty(1)
     anim_transition = StringProperty('out_quad')
 
-    # default value of the instance attributes
-    _coro = ak.sleep_forever()
-
     def __init__(self, **kwargs):
+        self._task = ak.dummy_task
         self._anim_trigger = trigger = Clock.create_trigger(self._start_anim, -1)
         super().__init__(**kwargs)
         self.fbind('pos', trigger)
@@ -38,12 +34,12 @@ class Magnet(Factory.Widget):
     def _start_anim(self, *args):
         if self.children:
             child = self.children[0]
-            self._coro.close()
+            self._task.cancel()
             if not self.do_anim:
                 child.pos = self.pos
                 child.size = self.size
                 return
-            self._coro = ak.start(ak.animate(
+            self._task = ak.start(ak.animate(
                 child,
                 d=self.anim_duration,
                 t=self.anim_transition,
@@ -55,6 +51,7 @@ KV_CODE = '''
 #:import create_spacer kivy_garden.draggable._utils._create_spacer
 
 <ReorderableGridLayout@KXReorderableBehavior+GridLayout>:
+
 <DraggableItem@KXDraggableBehavior+Magnet>:
     do_anim: not self.is_being_dragged
     anim_duration: .2

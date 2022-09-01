@@ -20,6 +20,7 @@ from kivy_garden.draggable import KXDraggableBehavior
 KV_CODE = r'''
 <SHLabel@Label,SHButton@Button>:
     size_hint_min: [v + dp(8) for v in self.texture_size]
+
 <SHFood>:
     orientation: 'vertical'
     spacing: '4dp'
@@ -39,12 +40,14 @@ KV_CODE = r'''
         size_hint_y: 3.
     SHLabel:
         text: '{} ({} yen)'.format(root.datum.name, root.datum.price)
+
 <SHShelf@KXReorderableBehavior+RVLikeBehavior+StackLayout>:
     padding: '10dp'
     spacing: '10dp'
     size_hint_min_y: self.minimum_height
     drag_classes: ['food', ]
     viewclass: 'SHFood'
+
 <SHMain>:
     orientation: 'vertical'
     padding: '10dp'
@@ -111,6 +114,7 @@ class ShoppingApp(App):
     def build(self):
         Builder.load_string(KV_CODE)
         return SHMain()
+
     def on_start(self):
         ak.start(self.root.main(db_path=__file__ + r".sqlite3"))
 
@@ -193,7 +197,7 @@ class SHMain(F.BoxLayout):
 
             # download images
             with ThreadPoolExecutor() as executer:
-                with requests.Session() as session:  # The Session object may not be thread-safe so it's probably better not to share it between threads...
+                with requests.Session() as session:  # TODO: The Session object may not be thread-safe so it's probably better not to share it between threads...
                     async def download_one_image(name, image_url) -> Tuple[bytes, str]:
                         image = await ak.run_in_executer(lambda: session.get(image_url).content, executer)
                         return (image, name)

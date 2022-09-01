@@ -1,13 +1,11 @@
+from kivy.utils import reify
 from kivy.properties import NumericProperty
 from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 import asynckivy as ak
 
-from kivy_garden.draggable import (
-    KXDraggableBehavior, KXDroppableBehavior,
-)
+from kivy_garden.draggable import KXDraggableBehavior, KXDroppableBehavior
 
 KV_CODE = '''
 <MyDroppable>:
@@ -39,7 +37,6 @@ KV_CODE = '''
 <VDivider@Divider>:
     size_hint_x: None
     width: 1
-
 
 BoxLayout:
     orientation: 'vertical'
@@ -98,9 +95,9 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
     '''
     __events__ = ('on_drag_enter', 'on_drag_leave', )
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.__ud_key = 'ReactiveDroppableBehavior.' + str(self.uid)
+    @reify
+    def __ud_key(self):
+        return 'ReactiveDroppableBehavior.' + str(self.uid)
 
     def on_touch_move(self, touch):
         ud_key = self.__ud_key
@@ -110,12 +107,11 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
             if drag_cls is not None:
                 touch_ud[ud_key] = None
                 if drag_cls in self.drag_classes:
-                    # Watches 'is_being_dragged' as well, so that the
-                    # '_watch_touch()' will be automatically cancelled when
-                    # the drag is cancelled.
+                    # Start watching the touch. Use ``ak.or_()`` so that ``_watch_touch()`` will be automatically
+                    # cancelled when the drag is cancelled.
                     ak.start(ak.or_(
                         self._watch_touch(touch),
-                        ak.event(touch.ud['kivyx_draggable'], 'is_being_dragged'),
+                        ak.event(touch.ud['kivyx_draggable'], 'on_drag_end'),
                     ))
         return super().on_touch_move(touch)
 

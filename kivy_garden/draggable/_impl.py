@@ -379,12 +379,11 @@ class KXReorderableBehavior:
             if drag_cls is not None:
                 touch_ud[ud_key] = None
                 if drag_cls in self.drag_classes:
-                    # Watches 'is_being_dragged' as well, so that the
-                    # '_watch_touch()' will be automatically cancelled when
-                    # the drag is cancelled.
+                    # Start watching the touch. Use ``ak.or_()`` so that ``_watch_touch()`` will be automatically
+                    # cancelled when the drag is cancelled.
                     ak.start(ak.or_(
                         self._watch_touch(touch),
-                        ak.event(touch.ud['kivyx_draggable'], 'is_being_dragged'),
+                        ak.event(touch.ud['kivyx_draggable'], 'on_drag_end'),
                     ))
         return super().on_touch_move(touch)
 

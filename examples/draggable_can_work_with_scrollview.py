@@ -2,7 +2,7 @@
 Nothing special. Just an example of re-orderable BoxLayout.
 '''
 
-from kivy.app import runTouchApp
+from kivy.app import App
 from kivy.lang import Builder
 from kivy.factory import Factory
 import kivy_garden.draggable
@@ -20,6 +20,7 @@ KV_CODE = '''
         Line:
             width: 2
             rectangle: [*self.pos, *self.size, ]
+
 <ReorderableBoxLayout@KXReorderableBehavior+BoxLayout>:
 
 ScrollView:
@@ -38,11 +39,17 @@ ScrollView:
         size_hint_min_y: self.minimum_height
 '''
 
-root = Builder.load_string(KV_CODE)
-DraggableItem = Factory.DraggableItem
-boxlayout = root.ids.boxlayout.__self__
-add_widget = boxlayout.add_widget
-for i in range(100):
-    add_widget(DraggableItem(text=str(i)))
 
-runTouchApp(root)
+class SampleApp(App):
+    def build(self):
+        return Builder.load_string(KV_CODE)
+
+    def on_start(self):
+        DraggableItem = Factory.DraggableItem
+        add_widget = self.root.ids.boxlayout.add_widget
+        for i in range(100):
+            add_widget(DraggableItem(text=str(i)))
+
+
+if __name__ == '__main__':
+    SampleApp().run()
