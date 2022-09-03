@@ -9,8 +9,6 @@ Inspired by:
 * [drag_n_drop][drag_n_drop] (`Draggable` is based on this, so please read its documentation first to get the basic idea of this one)
 * [Flutter][flutter]
 
-**Installation**: `pip install kivy_garden.draggable`
-
 This flower adds a drag and drop functionality to layouts and widgets. There are 3
 main components used to have drag and drop:
 
@@ -21,6 +19,15 @@ main components used to have drag and drop:
 - The `KXDroppableBehavior`. An equivalent of Flutter's `DragTarget`.
 
 From now on, I use the term `droppable` to refer both `KXReorderableBehavior` and `KXDroppableBehavior`, and use the term `draggable` to refer `KXDraggableBehavior`.
+
+## Installation
+
+It's recommended to pin the minor version, because if it changed, it means some important breaking changes occurred.
+
+```
+poetry add kivy_garden.draggable@~0.1
+pip install "kivy_garden.draggable>=0.1,<0.2"
+```
 
 ## Main differences from drag_n_drop
 

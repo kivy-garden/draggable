@@ -3,14 +3,21 @@
 ![](http://img.youtube.com/vi/CjiRZjiSqgA/0.jpg)  
 [Youtube][youtube]  
 
-**Install方法**: `pip install kivy_garden.draggable`
-
 `kivy_garden.draggable`はdrag&dropの機能を実現するための拡張機能で以下の三つの部品で構成される。
 
 - `KXDraggableBehavior` ... dragできるようにしたいwidgetが継承すべきclass
 - `KXDroppableBehavior`と`KXReorderableBehavior` ... dragされているwidgetを受け入れられるようにしたいwidgetが継承すべきclass
 
 `KXDroppableBehavior`と`KXReorderableBehavior`の違いはFlutterにおける[DragTarget][flutter_draggable_video]と[reorderables][flutter_reorderables]の違いに相当し、drag操作によってwidgetを並び替えたいなら`KXReorderableBehavior`を、そうじゃなければ`KXDroppableBehavior`を使うと良い。これらの名前は長ったらしいので以後は、dragを受け入れられるwidgetをまとめて「droppable」と呼び、dragできるwidgetを「draggable」と呼ぶ。
+
+## Install方法
+
+このmoduleのminor versionが変わった時は何らかの重要な互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
+
+```
+poetry add kivy_garden.draggable@~0.1
+pip install "kivy_garden.draggable>=0.1,<0.2"
+```
 
 ## dragが始まる条件
 
