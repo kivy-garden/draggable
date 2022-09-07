@@ -45,7 +45,7 @@ GridLayout:
 
 
 class MyDraggable(KXDraggableBehavior, Label):
-    async def on_drag_fail(self, touch):
+    async def on_drag_fail(self, touch, ctx):
         with transform(self) as ig:
             ig.add(rotate := Rotate(origin=self.center))
             async for p in vanim.progress(duration=.4):
@@ -53,8 +53,7 @@ class MyDraggable(KXDraggableBehavior, Label):
                 self.opacity = 1. - p
             self.parent.remove_widget(self)
 
-    async def on_drag_success(self, touch):
-        ctx = self.drag_context
+    async def on_drag_succeed(self, touch, ctx):
         self.parent.remove_widget(self)
         ctx.droppable.add_widget(self)
         await ak.sleep(0)  # wait for the layout to complete
@@ -66,7 +65,7 @@ class MyDraggable(KXDraggableBehavior, Label):
 
 
 class Cell(KXDroppableBehavior, FloatLayout):
-    def accepts_drag(self, touch, draggable) -> bool:
+    def accepts_drag(self, touch, ctx, draggable) -> bool:
         return not self.children
 
     def add_widget(self, widget, *args, **kwargs):

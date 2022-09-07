@@ -3,8 +3,6 @@
 ![](http://img.youtube.com/vi/CjiRZjiSqgA/0.jpg)  
 [Youtube][youtube]  
 
-**Install方法**: `pip install kivy_garden.draggable`
-
 `kivy_garden.draggable`はdrag&dropの機能を実現するための拡張機能で以下の三つの部品で構成される。
 
 - `KXDraggableBehavior` ... dragできるようにしたいwidgetが継承すべきclass
@@ -12,16 +10,56 @@
 
 `KXDroppableBehavior`と`KXReorderableBehavior`の違いはFlutterにおける[DragTarget][flutter_draggable_video]と[reorderables][flutter_reorderables]の違いに相当し、drag操作によってwidgetを並び替えたいなら`KXReorderableBehavior`を、そうじゃなければ`KXDroppableBehavior`を使うと良い。これらの名前は長ったらしいので以後は、dragを受け入れられるwidgetをまとめて「droppable」と呼び、dragできるwidgetを「draggable」と呼ぶ。
 
+## Install方法
+
+このmoduleのminor versionが変わった時は何らかの重要な互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
+
+```
+poetry add kivy_garden.draggable@~0.1
+pip install "kivy_garden.draggable>=0.1,<0.2"
+```
+
 ## dragが始まる条件
 
 dragは長押しによって引き起こされる。より具体的には利用者の指がdraggable内に降りてから`draggable.drag_distance`pixel以上動かずに`draggable.drag_timeout`ミリ秒以上指が離れなかった場合のみ引き起こされる。このためscroll操作(指がすぐさま動き出す)やtap動作(指がすぐに離れる)として誤認されにくい。
 
 ## dragが始まった後の処理の流れ
 
-一度dragが始まると処理の流れは次の図のようになる。
-(図中の緑色はそのeventが起こることを意味する)。
+ユーザーがdraggableの上に指を降ろしてdragが始まった後の流れは以下のようになる。
 
-![](doc/source/images/drag_flowchart_jp.png)
+```mermaid
+stateDiagram-v2
+    state cancelled? <<choice>>
+    state on_a_droppable? <<choice>>
+    state listed? <<choice>>
+    state accepted? <<choice>>
+
+    [*] --> on_drag_start
+    on_drag_start --> cancelled?
+    cancelled? --> on_a_droppable?: 指が離れる
+    cancelled? --> on_drag_cancel: 指が離れる前に 'draggable.cancel()' が呼ばれる
+
+    on_a_droppable? --> listed?: 指が離れたのはdroppableの上
+    on_a_droppable? --> on_drag_fail: 上ではない
+
+    droppable_is_set: 'ctx.droppable'の値がそのdroppableになる
+    listed? --> droppable_is_set: 'draggable.drag_cls' が 'droppable.drag_classes' に含まれている
+    listed? --> on_drag_fail: 含まれていない
+
+    droppable_is_set --> accepted?
+    accepted? --> on_drag_succeed: droppableがdragを受け入れる('droppable.accepts_drag()'が真を返す)
+    accepted? --> on_drag_fail
+
+    on_drag_cancel --> on_drag_end
+    on_drag_fail --> on_drag_end
+    on_drag_succeed --> on_drag_end
+
+    on_drag_end --> [*]
+    note right of on_drag_end
+        どのようにdragが終わったのかを 'ctx.state' から知れる。
+        値は 'succeeded' か 'failed' か 'cancelled' のいずれか。
+    end note
+```
 
 ## 受け入れるdragの選別
 
@@ -87,15 +125,15 @@ dragが失敗/成功/中止した時に何をするかは完全にあなたに�
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_fail(self, touch, draggable):
-        restore_widget_location(self, self.drag_context.original_location)
+    def on_drag_fail(self, touch, ctx):
+        restore_widget_location(self, ctx.original_location)
 ```
 
 また何もせずにその場に残って欲しいなら以下のようにすれば良い。
 
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_fail(self, touch, draggable):
+    def on_drag_fail(self, touch, ctx):
         pass
 ```
 
@@ -105,13 +143,13 @@ class MyDraggable(KXDraggableBehavior, Widget):
 import asynckivy as ak
 
 class MyDraggable(KXDraggableBehavior, Widget):
-    async def on_drag_success(self, touch, draggable):
+    async def on_drag_succeed(self, touch, ctx):
         await ak.animate(self, opacity=0)
         self.parent.remove_widget(self)
 ```
 
 このようにdefault handlerを上書きすることで自由に振るまいを変えられる。
-ただし**async関数になれるのは`on_drag_success`と`on_drag_fail`のdefault handlerだけ**なので注意されたし。
+ただし**async関数になれるのは`on_drag_succeed`と`on_drag_fail`のdefault handlerだけ**なので注意されたし。
 
 ここで
 
@@ -121,16 +159,16 @@ class MyDraggable(KXDraggableBehavior, Widget):
 の違いについて説明する。
 前者ではasync関数のcodeがdrag処理の間に挟み込まれ、codeが`on_drag_end`が起こるより前に完遂される事が保証されるのに対し、
 後者ではcodeがdrag処理とは独立して進むので`on_drag_end`が起こるより前に完了する保証はない。
-なのでもし上の`on_drag_success`の例を後者のやり方で実装すると
+なのでもし上の`on_drag_succeed`の例を後者のやり方で実装すると
 
 ```python
 import asynckivy as ak
 
 class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_success(self, touch, draggable):
-        ak.start(self._fade_out(touch, draggable))
+    def on_drag_succeed(self, touch, ctx):
+        ak.start(self._fade_out(touch))
 
-    async def _fade_out(self, touch, draggable):
+    async def _fade_out(self, touch):
         await ak.animate(self, opacity=0)
         self.parent.remove_widget(self)
 ```
