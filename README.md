@@ -53,8 +53,8 @@ stateDiagram-v2
 
     [*] --> on_drag_start
     on_drag_start --> cancelled?
-    cancelled? --> on_a_droppable?: User lifted thier finger up
-    cancelled? --> on_drag_cancel: 'draggable.cancel()' was called before the user lifts thier finger up
+    cancelled? --> on_a_droppable?: User lifted their finger up
+    cancelled? --> on_drag_cancel: 'draggable.cancel()' was called before the user lifts their finger up
 
     on_a_droppable? --> listed?: Finger was on a droppable
     on_a_droppable? --> on_drag_fail: not on a droppable
