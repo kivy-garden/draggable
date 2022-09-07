@@ -44,7 +44,39 @@ pip install "kivy_garden.draggable>=0.1,<0.2"
 
 Once a drag has started, it will go through the following path.
 
-![](doc/source/images/drag_flowchart.png)
+```mermaid
+stateDiagram-v2
+    state cancelled? <<choice>>
+    state on_a_droppable? <<choice>>
+    state listed? <<choice>>
+    state accepted? <<choice>>
+
+    [*] --> on_drag_start
+    on_drag_start --> cancelled?
+    cancelled? --> on_a_droppable?: User lifted thier finger up
+    cancelled? --> on_drag_cancel: 'draggable.cancel()' was called before the user lifts thier finger up
+
+    on_a_droppable? --> listed?: Finger was on a droppable
+    on_a_droppable? --> on_drag_fail: not on a droppable
+
+    droppable_is_set: 'ctx.droppable' is set to the droppable
+    listed? --> droppable_is_set: 'draggable.drag_cls' was listed in the 'droppable.drag_classes'
+    listed? --> on_drag_fail: not listed
+
+    droppable_is_set --> accepted?
+    accepted? --> on_drag_succeed: Droppable accepted the drag ('droppable.accepts_drag()' returned True.)
+    accepted? --> on_drag_fail
+
+    on_drag_cancel --> on_drag_end
+    on_drag_fail --> on_drag_end
+    on_drag_succeed --> on_drag_end
+
+    on_drag_end --> [*]
+    note right of on_drag_end
+        You can tell how the drag has ended from the 'ctx.state'.
+        It's one of 'succeeded', 'failed' or 'cancelled'.
+    end note
+```
 
 ## Cancellation
 

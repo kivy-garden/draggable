@@ -25,10 +25,41 @@ dragは長押しによって引き起こされる。より具体的には利用�
 
 ## dragが始まった後の処理の流れ
 
-一度dragが始まると処理の流れは次の図のようになる。
-(図中の緑色はそのeventが起こることを意味する)。
+ユーザーがdraggableの上に指を降ろしてdragが始まった後の流れは以下のようになる。
 
-![](doc/source/images/drag_flowchart_jp.png)
+```mermaid
+stateDiagram-v2
+    state cancelled? <<choice>>
+    state on_a_droppable? <<choice>>
+    state listed? <<choice>>
+    state accepted? <<choice>>
+
+    [*] --> on_drag_start
+    on_drag_start --> cancelled?
+    cancelled? --> on_a_droppable?: 指が離れる
+    cancelled? --> on_drag_cancel: 指が離れる前に 'draggable.cancel()' が呼ばれる
+
+    on_a_droppable? --> listed?: 指が離れたのはdroppableの上
+    on_a_droppable? --> on_drag_fail: 上ではない
+
+    droppable_is_set: 'ctx.droppable'の値がそのdroppableになる
+    listed? --> droppable_is_set: 'draggable.drag_cls' が 'droppable.drag_classes' に含まれている
+    listed? --> on_drag_fail: 含まれていない
+
+    droppable_is_set --> accepted?
+    accepted? --> on_drag_succeed: droppableがdragを受け入れる('droppable.accepts_drag()'が真を返す)
+    accepted? --> on_drag_fail
+
+    on_drag_cancel --> on_drag_end
+    on_drag_fail --> on_drag_end
+    on_drag_succeed --> on_drag_end
+
+    on_drag_end --> [*]
+    note right of on_drag_end
+        どのようにdragが終わったのかを 'ctx.state' から知れる。
+        値は 'succeeded' か 'failed' か 'cancelled' のいずれか。
+    end note
+```
 
 ## 受け入れるdragの選別
 
