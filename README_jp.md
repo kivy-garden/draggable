@@ -55,10 +55,6 @@ stateDiagram-v2
     on_drag_succeed --> on_drag_end
 
     on_drag_end --> [*]
-    note right of on_drag_end
-        どのようにdragが終わったのかを 'ctx.state' から知れる。
-        値は 'succeeded' か 'failed' か 'cancelled' のいずれか。
-    end note
 ```
 
 ## 受け入れるdragの選別

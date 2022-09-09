@@ -8,7 +8,9 @@ from dataclasses import dataclass
 from contextlib import nullcontext
 
 from kivy.config import Config
-from kivy.properties import BooleanProperty, ListProperty, StringProperty, NumericProperty
+from kivy.properties import (
+    BooleanProperty, ListProperty, StringProperty, NumericProperty, OptionProperty, AliasProperty,
+)
 from kivy.clock import Clock
 from kivy.factory import Factory
 from kivy.uix.widget import Widget
@@ -41,11 +43,6 @@ class DragContext:
     '''(read-only) The widget where the draggable dropped to. This is always None on_drag_start/on_drag_cancel, and is
     always a widget on_drag_succeed, and can be either on_drag_fail/on_drag_end.'''
 
-    state: str = 'started'
-    '''(read-only) The current state of the drag. One of the following:
-    'started', 'succeeded', 'failed' or 'cancelled'.
-    '''
-
 
 class KXDraggableBehavior:
     __events__ = (
@@ -65,7 +62,10 @@ class KXDraggableBehavior:
     doesn't affect ongoing drag. Call `drag_cancel()` if you want to do that.
     '''
 
-    is_being_dragged = BooleanProperty(False)
+    drag_state = OptionProperty(None, options=('started', 'succeeded', 'failed', 'cancelled'), allownone=True)
+    '''(read-only)'''
+
+    is_being_dragged = AliasProperty(lambda self: self.drag_state is not None, bind=('drag_state', ), cache=True)
     '''(read-only)'''
 
     def drag_cancel(self):
@@ -144,7 +144,6 @@ class KXDraggableBehavior:
         ak.start(self._treat_a_touch_as_a_drag(touch, touch_receiver=touch_receiver))
 
     async def _treat_a_touch_as_a_drag(self, touch, *, do_transform=False, touch_receiver=None):
-        self.is_being_dragged = True
         try:
             if touch_receiver is None:
                 original_pos_win = self.to_window(*self.pos)
@@ -191,6 +190,7 @@ class KXDraggableBehavior:
 
             # actual dragging process
             self.dispatch('on_drag_start', touch, ctx)
+            self.drag_state = 'started'
             async with ak.watch_touch(self, touch) as is_touch_move:
                 while await is_touch_move():
                     self.x = touch.x - offset_x
@@ -201,22 +201,22 @@ class KXDraggableBehavior:
 
             ctx.droppable = droppable = touch_ud.get('kivyx_droppable', None)
             if droppable is None or (not droppable.accepts_drag(touch, ctx, self)):
-                ctx.state = 'failed'
                 r = self.dispatch('on_drag_fail', touch, ctx)
+                self.drag_state = 'failed'
             else:
-                ctx.state = 'succeeded'
                 r = self.dispatch('on_drag_succeed', touch, ctx)
+                self.drag_state = 'succeeded'
             async with ak.cancel_protection():
                 if isawaitable(r):
                     await r
                 await ak.sleep(-1)  # This is necessary in order to work with Magnet iirc.
         except GeneratorExit:
-            ctx.state = 'cancelled'
             self.dispatch('on_drag_cancel', touch, ctx)
+            self.drag_state = 'cancelled'
             raise
         finally:
             self.dispatch('on_drag_end', touch, ctx)
-            self.is_being_dragged = False
+            self.drag_state = None
             touch_ud['kivyx_droppable'] = None
             del touch_ud['kivyx_drag_cls']
             del touch_ud['kivyx_draggable']
