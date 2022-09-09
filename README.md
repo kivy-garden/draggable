@@ -72,10 +72,6 @@ stateDiagram-v2
     on_drag_succeed --> on_drag_end
 
     on_drag_end --> [*]
-    note right of on_drag_end
-        You can tell how the drag has ended from the 'ctx.state'.
-        It's one of 'succeeded', 'failed' or 'cancelled'.
-    end note
 ```
 
 ## Cancellation
