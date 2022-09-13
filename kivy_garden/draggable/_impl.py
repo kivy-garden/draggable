@@ -131,18 +131,18 @@ class KXDraggableBehavior:
                     return False
         return True
 
-    def drag_start_from_others_touch(self, touch_receiver: Widget, touch):
+    def start_dragging_from_others_touch(self, receiver: Widget, touch):
         '''
         Arguments
         ---------
 
-        * ``touch_receiver`` ... A widget that received the ``touch``.
+        * ``receiver`` ... The widget that received the ``touch``.
         * ``touch`` ... A touch that is going to drag me.
         '''
         if touch.time_end != -1:
             return
         touch.ud[self.__ud_key] = None
-        ak.start(self._treat_a_touch_as_a_drag(touch, touch_receiver=touch_receiver))
+        ak.start(self._treat_a_touch_as_a_drag(touch, touch_receiver=receiver))
 
     async def _treat_a_touch_as_a_drag(self, touch, *, do_transform=False, touch_receiver=None):
         try:
