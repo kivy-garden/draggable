@@ -89,7 +89,7 @@ class Deck(Label):
         if self.collide_point(*touch.opos):
             if (text := next(self.text_iter, None)) is not None:
                 card = Card(text=text, size=self.board.children[0].size)
-                card.drag_start_from_others_touch(self, touch)
+                card.start_dragging_from_others_touch(self, touch)
             return True
 
 
