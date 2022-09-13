@@ -11,6 +11,7 @@ from kivy.config import Config
 from kivy.properties import BooleanProperty, ListProperty, StringProperty, NumericProperty
 from kivy.clock import Clock
 from kivy.factory import Factory
+import kivy.core.window
 from kivy.uix.widget import Widget
 import asynckivy as ak
 
@@ -278,11 +279,8 @@ class KXDraggableBehavior:
         restore_widget_location(self, ctx.original_location)
 
 
-def ongoing_drags(*, window=None) -> List[KXDraggableBehavior]:
+def ongoing_drags(*, window=kivy.core.window.Window) -> List[KXDraggableBehavior]:
     '''Returns a list of draggables currently being dragged'''
-    if window is None:
-        from kivy.core.window import Window
-        window = Window
     return [
         c for c in window.children
         # maybe it's better not to check the type, like:
