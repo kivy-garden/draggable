@@ -31,10 +31,10 @@ exclude = [
 python = "^3.7"
 asynckivy = "~0.5"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^7.1.2"
 flake8 = "^5.0.4"
-kivy = {url = "https://github.com/kivy/kivy/archive/refs/tags/2.1.0.zip"}
+kivy = "==2.1.0"
 
 [build-system]
 requires = ["poetry-core"]

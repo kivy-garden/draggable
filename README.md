@@ -165,7 +165,6 @@ its code will be a part of dragging process and is guaranteed to be finished bef
 ## License
 
 This software is released under the terms of the MIT License.
-Please see the [LICENSE.txt](LICENSE.txt) file.
 
 [drag_n_drop]:https://github.com/kivy-garden/drag_n_drop
 [flutter]:https://api.flutter.dev/flutter/widgets/Draggable-class.html
