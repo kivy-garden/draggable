@@ -39,7 +39,7 @@ BoxLayout:
         size_hint_x: .1
 
     # Put the board inside a RelativeLayout just to confirm the coordinates are properly transformed.
-    # It's not necessary for this example to work.
+    # It's not necessary for this example to work though.
     RelativeLayout:
         GridLayout:
             id: board

@@ -20,6 +20,7 @@ from kivy_garden.draggable import KXDraggableBehavior
 KV_CODE = r'''
 <SHLabel@Label,SHButton@Button>:
     size_hint_min: [v + dp(8) for v in self.texture_size]
+    halign: 'center'
 
 <SHFood>:
     orientation: 'vertical'
@@ -129,7 +130,7 @@ class SHMain(F.BoxLayout):
                 title='Total',
                 content=F.Label(),
             )
-            popup.bind(on_dismiss=lambda *__: _cache.append(popup))
+            popup.bind(on_dismiss=lambda popup, _cache=_cache: _cache.append(popup))
         total_price = sum(d.price for d in self.ids.cart.data)
         popup.content.text = f"{total_price} yen"
         popup.open()
@@ -140,6 +141,7 @@ class SHMain(F.BoxLayout):
         from kivy.core.image import Image as CoreImage
         conn = await self._load_database(db_path)
         with closing(conn.cursor()) as cur:
+            # FIXME: It's probably better to ``Texture.add_reload_observer()``.
             self.food_textures = textures = {
                 name: CoreImage(BytesIO(image_data), ext='png').texture
                 for name, image_data in cur.execute("SELECT name, image FROM Foods")
@@ -196,15 +198,15 @@ class SHMain(F.BoxLayout):
             """)
 
             # download images
-            with ThreadPoolExecutor() as executer:
-                with requests.Session() as session:  # TODO: The Session object may not be thread-safe so it's probably better not to share it between threads...
-                    async def download_one_image(name, image_url) -> Tuple[bytes, str]:
-                        image = await ak.run_in_executer(lambda: session.get(image_url).content, executer)
-                        return (image, name)
-                    tasks = await ak.and_from_iterable(
-                        download_one_image(name, image_url)
-                        for name, image_url in cur.execute("SELECT name, image_url FROM Foods")
-                    )
+            # FIXME: The Session object may not be thread-safe so it's probably better not to share it between threads...
+            with ThreadPoolExecutor() as executer, requests.Session() as session:
+                async def download_one_image(name, image_url) -> Tuple[bytes, str]:
+                    image = await ak.run_in_executer(lambda: session.get(image_url).content, executer)
+                    return (image, name)
+                tasks = await ak.and_from_iterable(
+                    download_one_image(name, image_url)
+                    for name, image_url in cur.execute("SELECT name, image_url FROM Foods")
+                )
 
             # save images
             cur.executemany(
