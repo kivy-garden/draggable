@@ -36,7 +36,7 @@ pip install "kivy_garden.draggable>=0.1,<0.2"
   milli seconds without traveling more than `draggable.drag_distance` pixels, it will
   be recognized as a dragging gesture.
 - Droppables can handle multiple drags simultaneously.
-- Drag can be cancelled by calling `draggable.drag_cancel()`.
+- Drag can be canceled by calling `draggable.drag_cancel()`.
 - Nested `KXReorderableBehavior` is not officially supported. It may or may
   not work depending on how `drag_classes` and `drag_cls` are set.
 
@@ -53,8 +53,8 @@ stateDiagram-v2
 
     [*] --> on_drag_start
     on_drag_start --> cancelled?
-    cancelled? --> on_a_droppable?: User lifted thier finger up
-    cancelled? --> on_drag_cancel: 'draggable.cancel()' was called before the user lifts thier finger up
+    cancelled? --> on_a_droppable?: User lifted their finger up
+    cancelled? --> on_drag_cancel: 'draggable.cancel()' was called before the user lifts their finger up
 
     on_a_droppable? --> listed?: Finger was on a droppable
     on_a_droppable? --> on_drag_fail: not on a droppable
@@ -76,7 +76,7 @@ stateDiagram-v2
 
 ## Cancellation
 
-When your app switches a scene, you may want to cancel the all ongoing drags.
+When your app switches a scene, you may want to cancel all the ongoing drags.
 `ongoing_drags()` and `draggable.drag_cancel()` are what you want.
 
 ```python
@@ -92,7 +92,7 @@ def cancel_all_ongoing_drags():
 Let's say you are creating a card game, and there is a deck on the screen.
 Say, you want the deck to emit a card when the user drops a finger on it,
 and want the card to follow the finger until the user lifts it up.
-In this situation, a widget who triggers a drag and a widget who is dragged are different.
+In this situation, a widget that triggers a drag and a widget that is dragged are different.
 You can implement it as follows:
 
 ```python
