@@ -9,8 +9,7 @@ from kivy.uix.label import Label
 from kivy.graphics import Rotate, Scale
 
 import asynckivy as ak
-from asynckivy import vanim
-from asynckivy.utils import transform
+from asynckivy import vanim, transform
 
 from kivy_garden.draggable import KXDroppableBehavior, KXDraggableBehavior
 
