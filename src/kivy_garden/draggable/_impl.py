@@ -107,7 +107,7 @@ class KXDraggableBehavior:
             ak.sleep(self.drag_timeout / 1000.),
             self._true_when_a_touch_ended_false_when_it_moved_too_much(touch),
         )
-        if tasks[0].done:
+        if tasks[0].finished:
             # The given touch is a dragging gesture.
             if self._can_be_dragged:
                 await self._treat_a_touch_as_a_drag(touch, do_transform=True)
@@ -187,7 +187,7 @@ class KXDraggableBehavior:
 
             # store the task object so that the user can cancel it
             self._drag_task.cancel()
-            self._drag_task = await ak.get_current_task()
+            self._drag_task = await ak.current_task()
 
             # actual dragging process
             self.dispatch('on_drag_start', touch, ctx)
@@ -207,11 +207,11 @@ class KXDraggableBehavior:
             else:
                 r = self.dispatch('on_drag_succeed', touch, ctx)
                 self.drag_state = 'succeeded'
-            async with ak.cancel_protection():
+            async with ak.disable_cancellation():
                 if isawaitable(r):
                     await r
                 await ak.sleep(-1)  # This is necessary in order to work with Magnet iirc.
-        except GeneratorExit:
+        except ak.Cancelled:
             self.dispatch('on_drag_cancel', touch, ctx)
             self.drag_state = 'cancelled'
             raise

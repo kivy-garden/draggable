@@ -201,12 +201,12 @@ class SHMain(F.BoxLayout):
             # FIXME: The Session object may not be thread-safe so it's probably better not to share it between threads...
             with ThreadPoolExecutor() as executer, requests.Session() as session:
                 async def download_one_image(name, image_url) -> Tuple[bytes, str]:
-                    image = await ak.run_in_executer(lambda: session.get(image_url).content, executer)
+                    image = await ak.run_in_executor(executer, lambda: session.get(image_url).content)
                     return (image, name)
-                tasks = await ak.and_from_iterable(
+                tasks = await ak.wait_all(*(
                     download_one_image(name, image_url)
                     for name, image_url in cur.execute("SELECT name, image_url FROM Foods")
-                )
+                ))
 
             # save images
             cur.executemany(
