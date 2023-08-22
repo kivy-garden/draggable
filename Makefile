@@ -3,7 +3,7 @@ PYTEST = $(PYTHON) -m pytest
 FLAKE8 = $(PYTHON) -m flake8
 
 test:
-	$(PYTEST) ./kivy_garden/draggable/tests
+	$(PYTEST) ./tests
 
 style:
-	$(FLAKE8) ./kivy_garden/draggable
+	$(FLAKE8) ./src/kivy_garden/draggable

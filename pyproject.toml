@@ -21,10 +21,7 @@ classifiers=[
     'Operating System :: OS Independent',
 ]
 packages = [
-    { include = "kivy_garden" },
-]
-exclude = [
-    "kivy_garden/draggable/tests",
+    { include = "kivy_garden", from = "src" },
 ]
 
 [tool.poetry.dependencies]
