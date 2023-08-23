@@ -15,19 +15,13 @@ from kivy.clock import Clock
 from kivy.factory import Factory
 import kivy.core.window
 from kivy.uix.widget import Widget
+from kivy.uix.scrollview import ScrollView
 import asynckivy as ak
 
 from ._utils import (
     temp_transform, temp_grab_current, _create_spacer,
     save_widget_location, restore_widget_location,
 )
-
-
-# When we are generating documentation, Config doesn't exist
-_scroll_timeout = _scroll_distance = 0
-if Config:
-    _scroll_timeout = Config.getint('widgets', 'scroll_timeout')
-    _scroll_distance = Config.get('widgets', 'scroll_distance') + 'sp'
 
 
 @dataclass
@@ -54,9 +48,9 @@ class KXDraggableBehavior:
     drag_cls = StringProperty()
     '''Same as drag_n_drop's '''
 
-    drag_distance = NumericProperty(_scroll_distance)
+    drag_distance = NumericProperty(ScrollView.scroll_distance.defaultvalue)
 
-    drag_timeout = NumericProperty(_scroll_timeout)
+    drag_timeout = NumericProperty(ScrollView.scroll_timeout.defaultvalue)
 
     drag_enabled = BooleanProperty(True)
     '''Indicates whether this draggable can be dragged or not. Changing this
@@ -70,14 +64,14 @@ class KXDraggableBehavior:
     '''(read-only)'''
 
     def drag_cancel(self):
-        '''Cancels drag as soon as possible. Does nothing if the draggable is
-        not being dragged.
+        '''
+        If the draggable is currently being dragged, cancel it.
         '''
         self._drag_task.cancel()
 
     def __init__(self, **kwargs):
-        self._drag_task = ak.dummy_task
         super().__init__(**kwargs)
+        self._drag_task = ak.dummy_task
         self.__ud_key = 'KXDraggableBehavior.' + str(self.uid)
 
     def _is_a_touch_potentially_a_dragging_gesture(self, touch) -> bool:
@@ -103,33 +97,31 @@ class KXDraggableBehavior:
             return super().on_touch_down(touch)
 
     async def _see_if_a_touch_actually_is_a_dragging_gesture(self, touch):
-        tasks = await ak.or_(
-            ak.sleep(self.drag_timeout / 1000.),
-            self._true_when_a_touch_ended_false_when_it_moved_too_much(touch),
+        async with ak.wait_any_cm(ak.sleep(self.drag_timeout / 1000.)):  # <- 'trio.move_on_after()' equivalent
+            # LOAD_FAST
+            abs_ = abs
+            drag_distance = self.drag_distance
+            ox, oy = touch.opos
+
+            do_touch_up = True
+            async with ak.watch_touch(self, touch) as in_progress:
+                while await in_progress():
+                    dx = abs_(touch.x - ox)
+                    dy = abs_(touch.y - oy)
+                    if dy > drag_distance or dx > drag_distance:
+                        do_touch_up = False
+                        break
+
+            # Reaching here means the given touch is not a dragging gesture.
+            ak.start(self._simulate_a_normal_touch(touch, do_touch_up=do_touch_up))
+            return
+
+        # Reaching here means the given touch is a dragging gesture.
+        ak.start(
+            self._treat_a_touch_as_a_drag(touch, do_transform=True)
+            if self._can_be_dragged else
+            self._simulate_a_normal_touch(touch, do_transform=True)
         )
-        if tasks[0].finished:
-            # The given touch is a dragging gesture.
-            if self._can_be_dragged:
-                await self._treat_a_touch_as_a_drag(touch, do_transform=True)
-            else:
-                await self._simulate_a_normal_touch(touch, do_transform=True)
-        else:
-            # The given touch is not a dragging gesture.
-            await self._simulate_a_normal_touch(touch, do_touch_up=tasks[1].result)
-
-    async def _true_when_a_touch_ended_false_when_it_moved_too_much(self, touch):
-        # LOAD_FAST
-        abs_ = abs
-        drag_distance = self.drag_distance
-
-        ox, oy = touch.opos
-        async with ak.watch_touch(self, touch) as is_touch_move:
-            while await is_touch_move():
-                dx = abs_(touch.x - ox)
-                dy = abs_(touch.y - oy)
-                if dy > drag_distance or dx > drag_distance:
-                    return False
-        return True
 
     def start_dragging_from_others_touch(self, receiver: Widget, touch):
         '''
@@ -180,12 +172,12 @@ class KXDraggableBehavior:
             )
             window.add_widget(self)
 
-            # mark the touch so that other widgets can react to the drag
+            # mark the touch so that other widgets can react to this drag
             touch_ud['kivyx_drag_cls'] = self.drag_cls
             touch_ud['kivyx_draggable'] = self
             touch_ud['kivyx_drag_ctx'] = ctx
 
-            # store the task object so that the user can cancel it
+            # store the task instance so that the user can cancel it later
             self._drag_task.cancel()
             self._drag_task = await ak.current_task()
 
