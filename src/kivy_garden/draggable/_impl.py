@@ -6,8 +6,8 @@ from typing import List, Tuple, Union
 from inspect import isawaitable
 from dataclasses import dataclass
 from contextlib import nullcontext
+from functools import cached_property
 
-from kivy.config import Config
 from kivy.properties import (
     BooleanProperty, ListProperty, StringProperty, NumericProperty, OptionProperty, AliasProperty,
 )
@@ -20,7 +20,7 @@ import asynckivy as ak
 
 from ._utils import (
     temp_transform, temp_grab_current, _create_spacer,
-    save_widget_location, restore_widget_location,
+    save_widget_state, restore_widget_state,
 )
 
 
@@ -31,12 +31,23 @@ class DragContext:
     started. (window coordinates).
     '''
 
-    original_location: dict = None
-    '''(read-only) Where the draggable came from. This can be passed to ``restore_widget_location()``. '''
+    original_state: dict = None
+    '''
+    (read-only) The state of the draggable at the time the drag has started.
+    This can be passed to ``restore_widget_state()``.
+    '''
 
     droppable: Union[None, 'KXDroppableBehavior', 'KXReorderableBehavior'] = None
     '''(read-only) The widget where the draggable dropped to. This is always None on_drag_start/on_drag_cancel, and is
     always a widget on_drag_succeed, and can be either on_drag_fail/on_drag_end.'''
+
+    @cached_property
+    def original_location(self) -> dict:
+        '''
+        This exists solely for backward compatibility.
+        Use :attr:`original_state` instead.
+        '''
+        return self.original_state
 
 
 class KXDraggableBehavior:
@@ -155,10 +166,10 @@ class KXDraggableBehavior:
                 from kivy.core.window import Window
                 window = Window
             touch_ud = touch.ud
-            original_location = save_widget_location(self)
+            original_state = save_widget_state(self)
             ctx = DragContext(
                 original_pos_win=original_pos_win,
-                original_location=original_location,
+                original_state=original_state,
             )
 
             # move self under the Window
@@ -252,11 +263,11 @@ class KXDraggableBehavior:
         pass
 
     def on_drag_succeed(self, touch, ctx: DragContext):
-        original_location = ctx.original_location
+        original_state = ctx.original_state
         self.parent.remove_widget(self)
-        self.size_hint_x = original_location['size_hint_x']
-        self.size_hint_y = original_location['size_hint_y']
-        self.pos_hint = original_location['pos_hint']
+        self.size_hint_x = original_state['size_hint_x']
+        self.size_hint_y = original_state['size_hint_y']
+        self.pos_hint = original_state['pos_hint']
         ctx.droppable.add_widget(self, index=touch.ud.get('kivyx_droppable_index', 0))
 
     async def on_drag_fail(self, touch, ctx: DragContext):
@@ -265,10 +276,10 @@ class KXDraggableBehavior:
             x=ctx.original_pos_win[0],
             y=ctx.original_pos_win[1],
         )
-        restore_widget_location(self, ctx.original_location)
+        restore_widget_state(self, ctx.original_state)
 
     def on_drag_cancel(self, touch, ctx: DragContext):
-        restore_widget_location(self, ctx.original_location)
+        restore_widget_state(self, ctx.original_state)
 
 
 def ongoing_drags(*, window=kivy.core.window.Window) -> List[KXDraggableBehavior]:
@@ -376,9 +387,9 @@ class KXReorderableBehavior:
         touch_ud = touch.ud
 
         try:
-            restore_widget_location(
+            restore_widget_state(
                 spacer,
-                touch_ud['kivyx_drag_ctx'].original_location,
+                touch_ud['kivyx_drag_ctx'].original_state,
                 ignore_parent=True)
             add_widget(spacer)
             async with ak.watch_touch(self, touch) as is_touch_move:

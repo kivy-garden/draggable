@@ -122,7 +122,7 @@ dragが失敗/成功/中止した時に何をするかは完全にあなたに�
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
     def on_drag_fail(self, touch, ctx):
-        restore_widget_location(self, ctx.original_location)
+        restore_widget_state(self, ctx.original_state)
 ```
 
 また何もせずにその場に残って欲しいなら以下のようにすれば良い。

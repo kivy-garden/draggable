@@ -9,7 +9,7 @@ from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import ScreenManager, NoTransition
 
-from kivy_garden.draggable import KXDroppableBehavior, KXDraggableBehavior, restore_widget_location
+from kivy_garden.draggable import KXDroppableBehavior, KXDraggableBehavior, restore_widget_state
 
 KV_CODE = '''
 <Cell>:
@@ -64,9 +64,9 @@ class FlutterStyleDraggable(KXDraggableBehavior, ScreenManager):
 
     def on_drag_start(self, touch, ctx):
         if self.has_screen('childWhenDragging'):
-            restore_widget_location(
+            restore_widget_state(
                 self.get_screen('childWhenDragging'),
-                ctx.original_location,
+                ctx.original_state,
             )
         return super().on_drag_start(touch, ctx)
 

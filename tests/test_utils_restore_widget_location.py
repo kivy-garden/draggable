@@ -2,31 +2,31 @@ import pytest
 
 
 @pytest.fixture(scope='module')
-def location_factory():
+def state_factory():
     from copy import deepcopy
-    loc = {
+    state = {
         'x': 2, 'y': 2, 'width': 2, 'height': 2,
         'size_hint_x': 2, 'size_hint_y': 2,
         'pos_hint': {'center': [2, 2, ], },
         'size_hint_min_x': 2, 'size_hint_min_y': 2,
         'size_hint_max_x': 2, 'size_hint_max_y': 2,
     }
-    return lambda: deepcopy(loc)
+    return lambda: deepcopy(state)
 
 
 @pytest.mark.parametrize('ignore_parent', (True, False, ))
-def test_sizing_info(location_factory, ignore_parent):
+def test_sizing_info(state_factory, ignore_parent):
     from kivy.uix.widget import Widget
-    from kivy_garden.draggable import restore_widget_location
+    from kivy_garden.draggable import restore_widget_state
     w = Widget()
-    loc = location_factory()
-    restore_widget_location(w, loc, ignore_parent=ignore_parent)
-    loc['width'] = 0
-    loc['x'] = 0
-    loc['size_hint_x'] = 0
-    loc['pos_hint']['center'][0] = 0
-    loc['size_hint_min_x'] = 0
-    loc['size_hint_min_y'] = 0
+    state = state_factory()
+    restore_widget_state(w, state, ignore_parent=ignore_parent)
+    state['width'] = 0
+    state['x'] = 0
+    state['size_hint_x'] = 0
+    state['pos_hint']['center'][0] = 0
+    state['size_hint_min_x'] = 0
+    state['size_hint_min_y'] = 0
     assert w.size == [2, 2, ]
     assert w.pos == [2, 2, ]
     assert w.size_hint == [2, 2, ]
@@ -37,16 +37,16 @@ def test_sizing_info(location_factory, ignore_parent):
 
 @pytest.mark.parametrize('ignore_parent', (True, False, ))
 @pytest.mark.parametrize('has_parent', (True, False, ))
-def test_weak_parent_is_none(location_factory, ignore_parent, has_parent):
+def test_weak_parent_is_none(state_factory, ignore_parent, has_parent):
     from kivy.uix.widget import Widget
-    from kivy_garden.draggable import restore_widget_location
-    loc = location_factory()
-    loc['weak_parent'] = None
+    from kivy_garden.draggable import restore_widget_state
+    state = state_factory()
+    state['weak_parent'] = None
     w = Widget()
     if has_parent:
         parent = Widget()
         parent.add_widget(w)
-    restore_widget_location(w, loc, ignore_parent=ignore_parent)
+    restore_widget_state(w, state, ignore_parent=ignore_parent)
     if ignore_parent and has_parent:
         assert w.parent is parent
     else:
@@ -55,17 +55,16 @@ def test_weak_parent_is_none(location_factory, ignore_parent, has_parent):
 
 @pytest.mark.parametrize('ignore_parent', (True, False, ))
 @pytest.mark.parametrize('has_parent', (True, False, ))
-def test_weak_parent_not_in_the_keys(
-        location_factory, ignore_parent, has_parent):
+def test_weak_parent_not_in_the_keys(state_factory, ignore_parent, has_parent):
     from kivy.uix.widget import Widget
-    from kivy_garden.draggable import restore_widget_location
-    loc = location_factory()
-    assert 'weak_parent' not in loc
+    from kivy_garden.draggable import restore_widget_state
+    state = state_factory()
+    assert 'weak_parent' not in state
     w = Widget()
     if has_parent:
         parent = Widget()
         parent.add_widget(w)
-    restore_widget_location(w, loc, ignore_parent=ignore_parent)
+    restore_widget_state(w, state, ignore_parent=ignore_parent)
     if has_parent:
         assert w.parent is parent
     else:
@@ -74,22 +73,21 @@ def test_weak_parent_not_in_the_keys(
 
 @pytest.mark.parametrize('ignore_parent', (True, False, ))
 @pytest.mark.parametrize('has_parent', (True, False, ))
-def test_weak_parent_is_alive(
-        location_factory, ignore_parent, has_parent):
+def test_weak_parent_is_alive(state_factory, ignore_parent, has_parent):
     import weakref
     from kivy.uix.widget import Widget
-    from kivy_garden.draggable import restore_widget_location
+    from kivy_garden.draggable import restore_widget_state
     prev_parent = Widget()
-    loc = location_factory()
-    loc['weak_parent'] = weakref.ref(prev_parent)
-    loc['index'] = 0
+    state = state_factory()
+    state['weak_parent'] = weakref.ref(prev_parent)
+    state['index'] = 0
     w = Widget()
     if has_parent:
         parent = Widget()
         parent.add_widget(w)
         parent.add_widget(Widget())
         assert parent.children.index(w) == 1
-    restore_widget_location(w, loc, ignore_parent=ignore_parent)
+    restore_widget_state(w, state, ignore_parent=ignore_parent)
     if ignore_parent:
         if has_parent:
             assert w.parent is parent
@@ -103,17 +101,16 @@ def test_weak_parent_is_alive(
 
 @pytest.mark.parametrize('ignore_parent', (True, False, ))
 @pytest.mark.parametrize('has_parent', (True, False, ))
-def test_weak_parent_is_dead(
-        location_factory, ignore_parent, has_parent):
+def test_weak_parent_is_dead(state_factory, ignore_parent, has_parent):
     import gc
     import weakref
     from kivy.uix.widget import Widget
-    from kivy_garden.draggable import restore_widget_location
-    loc = location_factory()
-    loc['weak_parent'] = weakref.ref(Widget())
-    loc['index'] = 0
+    from kivy_garden.draggable import restore_widget_state
+    state = state_factory()
+    state['weak_parent'] = weakref.ref(Widget())
+    state['index'] = 0
     gc.collect()
-    assert loc['weak_parent']() is None
+    assert state['weak_parent']() is None
     w = Widget()
     if has_parent:
         parent = Widget()
@@ -121,10 +118,10 @@ def test_weak_parent_is_dead(
         parent.add_widget(Widget())
         assert parent.children.index(w) == 1
     if ignore_parent:
-        restore_widget_location(w, loc, ignore_parent=True)
+        restore_widget_state(w, state, ignore_parent=True)
     else:
         with pytest.raises(ReferenceError):
-            restore_widget_location(w, loc, ignore_parent=False)
+            restore_widget_state(w, state, ignore_parent=False)
     if has_parent:
         assert w.parent is parent
         assert parent.children.index(w) == 1
