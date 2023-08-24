@@ -120,7 +120,7 @@ class KXDraggableBehavior:
             x=ctx.original_pos_win[0],
             y=ctx.original_pos_win[1],
         )
-        restore_widget_location(self, ctx.original_location)
+        restore_widget_state(self, ctx.original_state)
 ```
 
 If you don't need the animation, and want the draggable to go back instantly, overwrite the handler as follows:
@@ -128,7 +128,7 @@ If you don't need the animation, and want the draggable to go back instantly, ov
 ```python
 class MyDraggable(KXDraggableBehavior, Widget):
     def on_drag_fail(self, touch, ctx):
-        restore_widget_location(self, ctx.original_location)
+        restore_widget_state(self, ctx.original_state)
 ```
 
 Or if you want the draggable to not go back, and want it to stay the current position, overwrite the handler as follows:

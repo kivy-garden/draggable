@@ -1,5 +1,6 @@
 __all__ = (
     'temp_transform', 'temp_grab_current',
+    'save_widget_state', 'restore_widget_state',
     'save_widget_location', 'restore_widget_location',
 )
 
@@ -45,29 +46,29 @@ _shallow_copyable_property_names = (
 )
 
 
-def save_widget_location(widget, *, ignore_parent=False) -> dict:
+def save_widget_state(widget, *, ignore_parent=False) -> dict:
     w = widget.__self__
-    location = {name: getattr(w, name) for name in _shallow_copyable_property_names}
-    location['pos_hint'] = deepcopy(w.pos_hint)
+    state = {name: getattr(w, name) for name in _shallow_copyable_property_names}
+    state['pos_hint'] = deepcopy(w.pos_hint)
     if ignore_parent:
-        return location
+        return state
     parent = w.parent
     if parent is None:
-        location['weak_parent'] = None
+        state['weak_parent'] = None
     else:
-        location['weak_parent'] = ref(parent)
-        location['index'] = parent.children.index(w)
-    return location
+        state['weak_parent'] = ref(parent)
+        state['index'] = parent.children.index(w)
+    return state
 
 
-def restore_widget_location(widget, location: dict, *, ignore_parent=False):
+def restore_widget_state(widget, state: dict, *, ignore_parent=False):
     w = widget.__self__
     for name in _shallow_copyable_property_names:
-        setattr(w, name, location[name])
-    w.pos_hint = deepcopy(location['pos_hint'])
-    if ignore_parent or 'weak_parent' not in location:
+        setattr(w, name, state[name])
+    w.pos_hint = deepcopy(state['pos_hint'])
+    if ignore_parent or 'weak_parent' not in state:
         return
-    weak_parent = location['weak_parent']
+    weak_parent = state['weak_parent']
     if weak_parent is None:
         parent = None
     else:
@@ -85,7 +86,7 @@ def restore_widget_location(widget, location: dict, *, ignore_parent=False):
     if parent.parent is parent:
         parent.add_widget(w)
     else:
-        parent.add_widget(w, index=location['index'])
+        parent.add_widget(w, index=state['index'])
 
 
 def _create_spacer(**kwargs):
@@ -106,3 +107,8 @@ def _create_spacer(**kwargs):
         size=lambda __, value: setattr(rect_inst, 'size', value),
     )
     return spacer
+
+
+# leave the old names for backward compatibility
+save_widget_location = save_widget_state
+restore_widget_location = restore_widget_state
