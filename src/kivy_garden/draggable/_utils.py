@@ -1,5 +1,5 @@
 __all__ = (
-    'temp_transform', 'temp_grab_current',
+    'temp_transform',
     'save_widget_state', 'restore_widget_state',
     'save_widget_location', 'restore_widget_location',
 )
@@ -22,20 +22,6 @@ class temp_transform:
 
     def __exit__(self, *args):
         self._touch.pop()
-
-
-class temp_grab_current:
-    __slots__ = ('_touch', '_original', )
-
-    def __init__(self, touch):
-        self._touch = touch
-        self._original = touch.grab_current
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, *args):
-        self._touch.grab_current = self._original
 
 
 _shallow_copyable_property_names = (
