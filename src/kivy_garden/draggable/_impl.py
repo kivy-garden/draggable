@@ -19,7 +19,7 @@ from kivy.uix.scrollview import ScrollView
 import asynckivy as ak
 
 from ._utils import (
-    temp_transform, temp_grab_current, _create_spacer,
+    temp_transform, _create_spacer,
     save_widget_state, restore_widget_state,
 )
 
@@ -228,10 +228,13 @@ class KXDraggableBehavior:
 
     async def _simulate_a_normal_touch(self, touch, *, do_transform=False, do_touch_up=False):
         # simulate 'on_touch_down'
-        with temp_grab_current(touch):
+        original = touch.grab_current
+        try:
             touch.grab_current = None
             with temp_transform(touch, self.parent.to_widget) if do_transform else nullcontext():
                 super().on_touch_down(touch)
+        finally:
+            touch.grab_current = original
 
         if not do_touch_up:
             return
