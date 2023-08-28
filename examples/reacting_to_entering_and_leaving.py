@@ -1,4 +1,4 @@
-from kivy.utils import reify
+from functools import cached_property
 from kivy.properties import NumericProperty
 from kivy.app import App
 from kivy.lang import Builder
@@ -95,7 +95,7 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
     '''
     __events__ = ('on_drag_enter', 'on_drag_leave', )
 
-    @reify
+    @cached_property
     def __ud_key(self):
         return 'ReactiveDroppableBehavior.' + str(self.uid)
 
@@ -107,9 +107,7 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
             if drag_cls is not None:
                 touch_ud[ud_key] = None
                 if drag_cls in self.drag_classes:
-                    # Start watching the touch. Use ``ak.or_()`` so that ``_watch_touch()`` will be automatically
-                    # cancelled when the drag is cancelled.
-                    ak.start(ak.or_(
+                    ak.start(ak.wait_any(
                         self._watch_touch(touch),
                         ak.event(touch.ud['kivyx_draggable'], 'on_drag_end'),
                     ))
@@ -122,8 +120,8 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
 
         self.dispatch('on_drag_enter', touch, ctx, draggable)
         try:
-            async with ak.watch_touch(self, touch) as is_touch_move:
-                while await is_touch_move():
+            async with ak.watch_touch(self, touch) as in_progress:
+                while await in_progress():
                     if not collide_point(*touch.pos):
                         return
         finally:

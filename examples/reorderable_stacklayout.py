@@ -1,8 +1,7 @@
 '''
-When you want to make ``StackLayout`` re-orderable, you may want to disable
-the ``size_hint`` of each child, or may want to limit the maximum size of
-each child, otherwise the layout may be messed up. You can confirm it by
-commenting/uncommenting the ``SampleApp.on_start()``'s body.
+When you want to make a :class:`kivy.uix.stacklayout.StackLayout` re-orderable, you may want to disable the
+``size_hint`` of each child, or may want to limit the maximum size of each child, otherwise the layout will be messed
+up. You can confirm that by commenting/uncommenting the part of ``SampleApp.on_start()``.
 '''
 
 from kivy.lang import Builder

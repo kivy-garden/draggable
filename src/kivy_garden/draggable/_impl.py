@@ -140,7 +140,7 @@ class KXDraggableBehavior:
         ---------
 
         * ``receiver`` ... The widget that received the ``touch``.
-        * ``touch`` ... A touch that is going to drag me.
+        * ``touch`` ... The touch that is going to drag me.
         '''
         if touch.time_end != -1:
             return
@@ -370,9 +370,7 @@ class KXReorderableBehavior:
             if drag_cls is not None:
                 touch_ud[ud_key] = None
                 if drag_cls in self.drag_classes:
-                    # Start watching the touch. Use ``ak.or_()`` so that ``_watch_touch()`` will be automatically
-                    # cancelled when the drag is cancelled.
-                    ak.start(ak.or_(
+                    ak.start(ak.wait_any(
                         self._watch_touch(touch),
                         ak.event(touch.ud['kivyx_draggable'], 'on_drag_end'),
                     ))
@@ -395,8 +393,8 @@ class KXReorderableBehavior:
                 touch_ud['kivyx_drag_ctx'].original_state,
                 ignore_parent=True)
             add_widget(spacer)
-            async with ak.watch_touch(self, touch) as is_touch_move:
-                while await is_touch_move():
+            async with ak.watch_touch(self, touch) as in_progress:
+                while await in_progress():
                     x, y = touch.pos
                     if collide_point(x, y):
                         new_idx = get_drop_insertion_index_move(x, y, spacer)
