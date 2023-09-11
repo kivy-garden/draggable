@@ -354,14 +354,6 @@ class KXReorderableBehavior:
                 return (widget, index)
         return (None, None)
 
-    def get_drop_insertion_index_move(self, x, y, spacer):
-        widget, idx = self.get_widget_under_drag(x, y)
-        if widget is spacer:
-            return None
-        if widget is None:
-            return None if self.children else 0
-        return idx
-
     def on_touch_move(self, touch):
         ud_key = self.__ud_key
         touch_ud = touch.ud
@@ -382,7 +374,7 @@ class KXReorderableBehavior:
 
         # LOAD_FAST
         collide_point = self.collide_point
-        get_drop_insertion_index_move = self.get_drop_insertion_index_move
+        get_widget_under_drag = self.get_widget_under_drag
         remove_widget = self.remove_widget
         add_widget = self.add_widget
         touch_ud = touch.ud
@@ -397,10 +389,16 @@ class KXReorderableBehavior:
                 while await in_progress():
                     x, y = touch.pos
                     if collide_point(x, y):
-                        new_idx = get_drop_insertion_index_move(x, y, spacer)
-                        if new_idx is not None:
-                            remove_widget(spacer)
-                            add_widget(spacer, index=new_idx)
+                        widget, idx = get_widget_under_drag(x, y)
+                        if widget is spacer:
+                            continue
+                        if widget is None:
+                            if self.children:
+                                continue
+                            else:
+                                idx = 0
+                        remove_widget(spacer)
+                        add_widget(spacer, index=idx)
                     else:
                         del touch_ud[self.__ud_key]
                         return
