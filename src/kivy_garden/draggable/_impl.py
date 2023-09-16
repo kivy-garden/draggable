@@ -6,7 +6,6 @@ from typing import List, Tuple, Union
 from inspect import isawaitable
 from dataclasses import dataclass
 from contextlib import nullcontext
-from functools import cached_property
 
 from kivy.properties import (
     BooleanProperty, ListProperty, StringProperty, NumericProperty, OptionProperty, AliasProperty,
@@ -41,7 +40,7 @@ class DragContext:
     '''(read-only) The widget where the draggable dropped to. This is always None on_drag_start/on_drag_cancel, and is
     always a widget on_drag_succeed, and can be either on_drag_fail/on_drag_end.'''
 
-    @cached_property
+    @property
     def original_location(self) -> dict:
         '''
         This exists solely for backward compatibility.
