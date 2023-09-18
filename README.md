@@ -6,7 +6,7 @@
 
 Inspired by:
 
-* [drag_n_drop][drag_n_drop] (`Draggable` is based on this, so please read its documentation first to get the basic idea of this one)
+* [drag_n_drop][drag_n_drop] (`Draggable` is based on this, so reading its documentation may help you understand `Draggable`)
 * [Flutter][flutter]
 
 This flower adds a drag and drop functionality to layouts and widgets. There are 3
@@ -76,7 +76,7 @@ stateDiagram-v2
 
 ## Cancellation
 
-When your app switches a scene, you may want to cancel all the ongoing drags.
+When your app switches a scene, you may want to cancel all ongoing drags.
 `ongoing_drags()` and `draggable.drag_cancel()` are what you want.
 
 ```python

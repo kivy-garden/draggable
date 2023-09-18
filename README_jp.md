@@ -8,7 +8,9 @@
 - `KXDraggableBehavior` ... dragできるようにしたいwidgetが継承すべきclass
 - `KXDroppableBehavior`と`KXReorderableBehavior` ... dragされているwidgetを受け入れられるようにしたいwidgetが継承すべきclass
 
-`KXDroppableBehavior`と`KXReorderableBehavior`の違いはFlutterにおける[DragTarget][flutter_draggable_video]と[reorderables][flutter_reorderables]の違いに相当し、drag操作によってwidgetを並び替えたいなら`KXReorderableBehavior`を、そうじゃなければ`KXDroppableBehavior`を使うと良い。これらの名前は長ったらしいので以後は、dragを受け入れられるwidgetをまとめて「droppable」と呼び、dragできるwidgetを「draggable」と呼ぶ。
+`KXDroppableBehavior`と`KXReorderableBehavior`の違いはFlutterにおける[DragTarget][flutter_draggable_video]と[reorderables][flutter_reorderables]の違いに相当し、
+drag操作によってwidgetを並び替えたいなら`KXReorderableBehavior`を、そうじゃなければ`KXDroppableBehavior`を使うと良いです。
+これらの名前は長ったらしいので以後は、dragを受け入れられるwidgetをまとめて「droppable」と呼び、dragできるwidgetを「draggable」と呼ぶ事にします。
 
 ## Install方法
 
@@ -94,8 +96,8 @@ def cancel_all_ongoing_drags():
 
 上で述べたようにdragはdraggableを長押しすることで引き起こされるので、
 dragを引き起こすwidgetとdragされるwidgetは基本同じです。
-でも例えばcard gameを作っているとして画面上に山札があったとして
-drag操作によって山札から札を引けるようにしたいとします。
+でも例えばカードゲームを作っていて画面上に山札があったとして
+drag操作によって山札から札を引けるようにしたかったとします。
 具体的には利用者が山札に指を触れた時に札を作り出し、
 そのまま指の動きに沿って札を追わせたいとします。
 このような
@@ -168,12 +170,27 @@ class MyDraggable(KXDraggableBehavior, Widget):
 
     async def _fade_out(self, touch):
         await ak.animate(self, opacity=0)
-        self.parent.remove_widget(self)
+        self.parent.remove_widget(self)  # A
 ```
 
 `ak.animate()`の進行中にdragが完了し、そこで利用者が再び指を触れたことで次のdragが始まり、
-その最中に`self.parent.remove_widget(self)`が実行されてdraggableが親widgetから切り離されてしまうなんて事が起こりえます。
+その最中にA行が実行されてdraggableが親widgetから切り離されてしまうなんて事が起こりえます。
 なので **drag完了前に完遂させたい非同期処理があるのなら必ず前者の方法を使ってください**。
+
+後これはこのモジュール特有ではなくKivyのイベントシステム共通の事なのですが、
+`.bind()`で結びつけた関数が真を返すとその関数よりも前に結びつけた関数とdefault handerが呼ばれなくなります。
+これを利用すれば一時的に振る舞いを変えられます。
+
+```python
+def 即座に元の位置へ戻す(draggable, touch, ctx):
+    restore_widget_state(draggable, ctx.original_state)
+    return True
+
+draggable = MyDraggable()
+draggable.bind(on_drag_fail=即座に元の位置へ戻す)  # このインスタンスの振る舞いを変える
+...
+draggable.unbind(on_drag_fail=即座に元の位置へ戻す)  # 元に戻す
+```
 
 ## その他
 
