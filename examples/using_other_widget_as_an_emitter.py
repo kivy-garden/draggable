@@ -39,7 +39,7 @@ BoxLayout:
         size_hint_x: .1
 
     # Put the board inside a RelativeLayout just to confirm the coordinates are properly transformed.
-    # It's not necessary for this example to work though.
+    # This is not necessary for this example to work.
     RelativeLayout:
         GridLayout:
             id: board
@@ -88,9 +88,12 @@ class Deck(Label):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
             if (text := next(self.text_iter, None)) is not None:
-                card = Card(text=text, size=self.board.children[0].size)
+                card = Card(text=text, size=self._get_cell_size())
                 card.start_dragging_from_others_touch(self, touch)
             return True
+
+    def _get_cell_size(self):
+        return self.board.children[0].size
 
 
 class SampleApp(App):
