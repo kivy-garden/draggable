@@ -7,7 +7,7 @@ https://api.flutter.dev/flutter/widgets/Draggable-class.html
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.screenmanager import ScreenManager, NoTransition
+from kivy.uix.relativelayout import RelativeLayout
 
 from kivy_garden.draggable import KXDroppableBehavior, KXDraggableBehavior, restore_widget_state
 
@@ -24,24 +24,20 @@ KV_CODE = '''
 <FlutterStyleDraggable>:
     drag_cls: 'test'
     drag_timeout: 0
-    # current: 'feedback' if self.is_being_dragged else 'child'
-    Screen:
-        name: 'child'
-        Label:
-            text: 'child'
-            bold: True
-    Screen:
-        name: 'childWhenDragging'
-        Label:
-            text: 'childWhenDragging'
-            bold: True
-            color: 1, 0, 1, 1
-    Screen:
-        name: 'feedback'
-        Label:
-            text: 'feedback'
-            bold: True
-            color: 1, 1, 0, 1
+    Label:
+        id: child
+        text: 'child'
+        bold: True
+    Label:
+        id: childWhenDragging
+        text: 'childWhenDragging'
+        bold: True
+        color: 1, 0, 1, 1
+    Label:
+        id: feedback
+        text: 'feedback'
+        bold: True
+        color: 1, 1, 0, 1
 
 GridLayout:
     id: board
@@ -52,37 +48,31 @@ GridLayout:
 '''
 
 
-class FlutterStyleDraggable(KXDraggableBehavior, ScreenManager):
+class FlutterStyleDraggable(KXDraggableBehavior, RelativeLayout):
+
     def on_kv_post(self, *args, **kwargs):
         super().on_kv_post(*args, **kwargs)
-        self.transition = NoTransition()
-        self.current = 'child'
-        self.fbind('is_being_dragged', FlutterStyleDraggable.__on_is_being_dragged)
-
-    def __on_is_being_dragged(self, value):
-        self.current = 'feedback' if value else 'child'
+        self._widgets = ws = {
+            name: self.ids[name].__self__
+            for name in ('child', 'childWhenDragging', 'feedback', )
+        }
+        self.clear_widgets()
+        self.add_widget(ws['child'])
 
     def on_drag_start(self, touch, ctx):
-        if self.has_screen('childWhenDragging'):
-            restore_widget_state(
-                self.get_screen('childWhenDragging'),
-                ctx.original_state,
-            )
+        ws = self._widgets
+        self.remove_widget(ws['child'])
+        self.add_widget(ws['feedback'])
+        restore_widget_state(ws['childWhenDragging'], ctx.original_state)
         return super().on_drag_start(touch, ctx)
 
-    def on_drag_fail(self, touch, ctx):
-        if self.has_screen('childWhenDragging'):
-            w = self.get_screen('childWhenDragging')
-            if w.parent is not None:
-                w.parent.remove_widget(w)
-        return super().on_drag_fail(touch, ctx)
-
-    def on_drag_succeed(self, touch, ctx):
-        if self.has_screen('childWhenDragging'):
-            w = self.get_screen('childWhenDragging')
-            if w.parent is not None:
-                w.parent.remove_widget(w)
-        return super().on_drag_succeed(touch, ctx)
+    def on_drag_end(self, touch, ctx):
+        ws = self._widgets
+        w = ws['childWhenDragging']
+        w.parent.remove_widget(w)
+        self.remove_widget(ws['feedback'])
+        self.add_widget(ws['child'])
+        return super().on_drag_end(touch, ctx)
 
 
 class Cell(KXDroppableBehavior, FloatLayout):
