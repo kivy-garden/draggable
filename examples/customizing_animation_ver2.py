@@ -1,5 +1,5 @@
-'''Alternative version of 'customizing_animation.py'. This one adds graphics instructions only while they're needed,
-requires less bindings, thus probably more efficient.
+'''Alternative version of 'customizing_animation.py'. This one adds graphics instructions on demand,
+requires less bindings, thus probably more efficient than the original.
 '''
 
 from kivy.app import App

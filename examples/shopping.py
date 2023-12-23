@@ -53,7 +53,7 @@ KV_CODE = r'''
     orientation: 'vertical'
     padding: '10dp'
     spacing: '10dp'
-    SpecialBoxLayout:
+    EquitableBoxLayout:
         BoxLayout:
             orientation: 'vertical'
             SHLabel:
@@ -219,8 +219,8 @@ class SHFood(KXDraggableBehavior, F.BoxLayout):
     datum = ObjectProperty(Food(), rebind=True)
 
 
-class SpecialBoxLayout(F.BoxLayout):
-    '''Always dispatches touch events to all the children'''
+class EquitableBoxLayout(F.BoxLayout):
+    '''Always dispatches touch events to all its children'''
     def on_touch_down(self, touch):
         return any([c.dispatch('on_touch_down', touch) for c in self.children])
     def on_touch_move(self, touch):

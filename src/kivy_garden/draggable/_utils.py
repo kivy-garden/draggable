@@ -26,6 +26,11 @@ _shallow_copyable_property_names = (
 )
 
 
+# TODO: The 'save_widget_state()' and 'restore_widget_state()' functions use weak references.
+# This was due to my feeling at that time, and I haven't tested whether they are necessary.
+# Therefore, it might be better to disuse them.
+
+
 def save_widget_state(widget, *, ignore_parent=False) -> dict:
     w = widget.__self__
     state = {name: getattr(w, name) for name in _shallow_copyable_property_names}

@@ -103,7 +103,7 @@ class KXDraggableBehavior:
             return super().on_touch_down(touch)
 
     async def _see_if_a_touch_actually_is_a_dragging_gesture(self, touch):
-        async with ak.wait_any_cm(ak.sleep(self.drag_timeout / 1000.)):  # <- 'trio.move_on_after()' equivalent
+        async with ak.wait_any_cm(ak.sleep(self.drag_timeout / 1000.)) as bg_task:
             # LOAD_FAST
             abs_ = abs
             drag_distance = self.drag_distance
@@ -118,16 +118,15 @@ class KXDraggableBehavior:
                         do_touch_up = False
                         break
 
-            # Reaching here means the given touch is not a dragging gesture.
+        is_a_dragging_gesture = bg_task.finished
+        if is_a_dragging_gesture:
+            ak.start(
+                self._treat_a_touch_as_a_drag(touch, do_transform=True)
+                if self._can_be_dragged else
+                self._simulate_a_normal_touch(touch, do_transform=True)
+            )
+        else:
             ak.start(self._simulate_a_normal_touch(touch, do_touch_up=do_touch_up))
-            return
-
-        # Reaching here means the given touch is a dragging gesture.
-        ak.start(
-            self._treat_a_touch_as_a_drag(touch, do_transform=True)
-            if self._can_be_dragged else
-            self._simulate_a_normal_touch(touch, do_transform=True)
-        )
 
     def start_dragging_from_others_touch(self, receiver: Widget, touch):
         '''
@@ -358,12 +357,12 @@ class KXReorderableBehavior:
                 touch_ud[ud_key] = None
                 if drag_cls in self.drag_classes:
                     ak.start(ak.wait_any(
-                        self._watch_touch(touch),
+                        self._place_a_spacer_widget_under_the_drag(touch),
                         ak.event(touch.ud['kivyx_draggable'], 'on_drag_end'),
                     ))
         return super().on_touch_move(touch)
 
-    async def _watch_touch(self, touch):
+    async def _place_a_spacer_widget_under_the_drag(self, touch):
         spacer = self._inactive_spacers.pop()
         self._active_spacers.append(spacer)
 
