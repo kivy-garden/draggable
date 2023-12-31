@@ -91,6 +91,12 @@ KV_CODE = r'''
         SHButton:
             text: 'sort by price\n(descend)'
             on_press: shelf.data = sorted(shelf.data, key=lambda d: d.price, reverse=True)
+        SHButton:
+            text: 'sort by name\n(ascend)'
+            on_press: shelf.data = sorted(shelf.data, key=lambda d: d.name)
+        SHButton:
+            text: 'sort by name\n(descend)'
+            on_press: shelf.data = sorted(shelf.data, key=lambda d: d.name, reverse=True)
         Widget:
         SHButton:
             text: 'total price'
