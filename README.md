@@ -115,7 +115,7 @@ This is because the default handler of `on_drag_fail` is implemented as follows:
 ```python
 class KXDraggableBehavior:
     async def on_drag_fail(self, touch, ctx):
-        await ak.animate(
+        await ak.anim_attrs(
             self, duration=.1,
             x=ctx.original_pos_win[0],
             y=ctx.original_pos_win[1],
@@ -147,7 +147,7 @@ overwrite the handler as follows:
 class MyDraggable(KXDraggableBehavior, Widget):
     async def on_drag_succeed(self, touch, ctx):
         import asynckivy
-        await asynckivy.animate(self, opacity=0)
+        await asynckivy.anim_attrs(self, opacity=0)
         self.parent.remove_widget(self)
 ```
 
