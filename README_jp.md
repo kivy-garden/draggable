@@ -144,7 +144,7 @@ import asynckivy as ak
 
 class MyDraggable(KXDraggableBehavior, Widget):
     async def on_drag_succeed(self, touch, ctx):
-        await ak.animate(self, opacity=0)
+        await ak.anim_attrs(self, opacity=0)
         self.parent.remove_widget(self)
 ```
 
@@ -169,11 +169,11 @@ class MyDraggable(KXDraggableBehavior, Widget):
         ak.start(self._fade_out(touch))
 
     async def _fade_out(self, touch):
-        await ak.animate(self, opacity=0)
+        await ak.anim_attrs(self, opacity=0)
         self.parent.remove_widget(self)  # A
 ```
 
-`ak.animate()`の進行中にdragが完了し、そこで利用者が再び指を触れたことで次のdragが始まり、
+`ak.anim_attrs()`の進行中にdragが完了し、そこで利用者が再び指を触れたことで次のdragが始まり、
 その最中にA行が実行されてdraggableが親widgetから切り離されてしまうなんて事が起こりえます。
 なので **drag完了前に完遂させたい非同期処理があるのなら必ず前者の方法を使ってください**。
 

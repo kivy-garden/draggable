@@ -103,7 +103,7 @@ class KXDraggableBehavior:
             return super().on_touch_down(touch)
 
     async def _see_if_a_touch_actually_is_a_dragging_gesture(self, touch):
-        async with ak.wait_any_cm(ak.sleep(self.drag_timeout / 1000.)) as bg_task:
+        async with ak.move_on_after(self.drag_timeout / 1000.) as bg_task:
             # LOAD_FAST
             abs_ = abs
             drag_distance = self.drag_distance
@@ -189,8 +189,8 @@ class KXDraggableBehavior:
             # actual dragging process
             self.dispatch('on_drag_start', touch, ctx)
             self.drag_state = 'started'
-            async with ak.watch_touch(self, touch) as is_touch_move:
-                while await is_touch_move():
+            async with ak.watch_touch(self, touch) as in_progress:
+                while await in_progress():
                     self.x = touch.x - offset_x
                     self.y = touch.y - offset_y
 
@@ -268,7 +268,7 @@ class KXDraggableBehavior:
         ctx.droppable.add_widget(self, index=touch.ud.get('kivyx_droppable_index', 0))
 
     async def on_drag_fail(self, touch, ctx: DragContext):
-        await ak.animate(
+        await ak.anim_attrs(
             self, duration=.1,
             x=ctx.original_pos_win[0],
             y=ctx.original_pos_win[1],

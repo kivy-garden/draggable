@@ -39,7 +39,7 @@ class Magnet(Factory.Widget):
                 child.pos = self.pos
                 child.size = self.size
                 return
-            self._task = ak.start(ak.animate(
+            self._task = ak.start(ak.anim_attrs(
                 child,
                 duration=self.anim_duration,
                 transition=self.anim_transition,
