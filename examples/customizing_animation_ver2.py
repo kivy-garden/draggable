@@ -9,7 +9,6 @@ from kivy.uix.label import Label
 from kivy.graphics import Rotate, Scale
 
 import asynckivy as ak
-from asynckivy import vanim, transform
 
 from kivy_garden.draggable import KXDroppableBehavior, KXDraggableBehavior
 
@@ -45,9 +44,9 @@ GridLayout:
 
 class MyDraggable(KXDraggableBehavior, Label):
     async def on_drag_fail(self, touch, ctx):
-        with transform(self) as ig:
+        with ak.transform(self) as ig:
             ig.add(rotate := Rotate(origin=self.center))
-            async for p in vanim.progress(duration=.4):
+            async for p in ak.anim_with_ratio(duration=.4):
                 rotate.angle = p * 720.
                 self.opacity = 1. - p
             self.parent.remove_widget(self)
@@ -57,9 +56,9 @@ class MyDraggable(KXDraggableBehavior, Label):
         ctx.droppable.add_widget(self)
         await ak.sleep(0)  # wait for the layout to complete
         abs_ = abs
-        with transform(self) as ig:
+        with ak.transform(self) as ig:
             ig.add(scale := Scale(origin=self.center))
-            async for p in vanim.progress(duration=.2):
+            async for p in ak.anim_with_ratio(duration=.2):
                 scale.x = scale.y = abs_(p * .8 - .4) + .6
 
 

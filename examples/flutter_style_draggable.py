@@ -1,5 +1,5 @@
 '''
-This example shows how to achive the same functionality as Flutter one's
+This example shows how to achieve the same functionality as Flutter one's
 'child', 'feedback' and 'childWhenDragging'.
 https://api.flutter.dev/flutter/widgets/Draggable-class.html
 '''

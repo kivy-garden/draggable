@@ -9,7 +9,6 @@ from kivy.properties import NumericProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 import asynckivy as ak
-from asynckivy import vanim
 
 from kivy_garden.draggable import KXDroppableBehavior, KXDraggableBehavior
 
@@ -64,7 +63,7 @@ class MyDraggable(KXDraggableBehavior, Label):
         self.parent.remove_widget(self)
         ctx.droppable.add_widget(self)
         abs_ = abs
-        async for p in vanim.progress(duration=.2):
+        async for p in ak.anim_with_ratio(duration=.2):
             self._scale = abs_(p * .8 - .4) + .6
 
 
