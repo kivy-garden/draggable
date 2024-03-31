@@ -1,4 +1,3 @@
-from weakref import ref
 from copy import deepcopy
 
 
@@ -26,48 +25,36 @@ _shallow_copyable_property_names = (
 )
 
 
-# TODO: The 'save_widget_state()' and 'restore_widget_state()' functions use weak references.
-# This was due to my feeling at that time, and I haven't tested whether they are necessary.
-# Therefore, it might be better to disuse them.
-
-
 def save_widget_state(widget, *, ignore_parent=False) -> dict:
     w = widget.__self__
-    state = {name: getattr(w, name) for name in _shallow_copyable_property_names}
+    getattr_ = getattr
+    state = {name: getattr_(w, name) for name in _shallow_copyable_property_names}
     state['pos_hint'] = deepcopy(w.pos_hint)
     if ignore_parent:
         return state
     parent = w.parent
-    if parent is None:
-        state['weak_parent'] = None
-    else:
-        state['weak_parent'] = ref(parent)
+    state['parent'] = parent
+    if parent is not None:
         state['index'] = parent.children.index(w)
     return state
 
 
 def restore_widget_state(widget, state: dict, *, ignore_parent=False):
     w = widget.__self__
+    setattr_ = setattr
     for name in _shallow_copyable_property_names:
-        setattr(w, name, state[name])
+        setattr_(w, name, state[name])
     w.pos_hint = deepcopy(state['pos_hint'])
-    if ignore_parent or 'weak_parent' not in state:
+    if ignore_parent or 'parent' not in state:
         return
-    weak_parent = state['weak_parent']
-    if weak_parent is None:
-        parent = None
-    else:
-        parent = weak_parent()
-        if parent is None:
-            raise ReferenceError("weakly-referenced parent no longer exists")
     if w.parent is not None:
         w.parent.remove_widget(w)
+    parent = state['parent']
     if parent is None:
         return
 
-    # 'Window.add_widget()' doesn't take 'index' so we need to check if the
-    # 'parent' is Window or not. The way to do it here is weird, and I'm not
-    # sure this is correct or not.
+    # The 'Window.add_widget()' doesn't have the 'index' parameter so we need to check whether the 'parent' is Window
+    # or not. The way to do it here is unreliable, and might not work in the future.
     if parent.parent is parent:
         parent.add_widget(w)
     else:
