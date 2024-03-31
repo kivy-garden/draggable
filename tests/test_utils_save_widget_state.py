@@ -12,16 +12,15 @@ def test_no_parent(ignore_parent):
         'size_hint_x': 1, 'size_hint_y': 1, 'pos_hint': {},
         'size_hint_min_x': None, 'size_hint_min_y': None,
         'size_hint_max_x': None, 'size_hint_max_y': None,
-        'weak_parent': None,
+        'parent': None,
     }
     if ignore_parent:
-        del expectation['weak_parent']
+        del expectation['parent']
     assert state == expectation
 
 
 @pytest.mark.parametrize('ignore_parent', (True, False, ))
 def test_has_parent(ignore_parent):
-    import weakref
     from kivy.uix.widget import Widget
     from kivy_garden.draggable import save_widget_state
     parent = Widget()
@@ -34,10 +33,10 @@ def test_has_parent(ignore_parent):
         'size_hint_x': 1, 'size_hint_y': 1, 'pos_hint': {},
         'size_hint_min_x': None, 'size_hint_min_y': None,
         'size_hint_max_x': None, 'size_hint_max_y': None,
-        'weak_parent': weakref.ref(parent), 'index': 1,
+        'parent': parent, 'index': 1,
     }
     if ignore_parent:
-        del expectation['weak_parent']
+        del expectation['parent']
         del expectation['index']
     assert state == expectation
 
