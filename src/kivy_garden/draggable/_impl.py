@@ -120,13 +120,13 @@ class KXDraggableBehavior:
 
         is_a_dragging_gesture = bg_task.finished
         if is_a_dragging_gesture:
-            ak.start(
+            await (
                 self._treat_a_touch_as_a_drag(touch, do_transform=True)
                 if self._can_be_dragged else
                 self._simulate_a_normal_touch(touch, do_transform=True)
             )
         else:
-            ak.start(self._simulate_a_normal_touch(touch, do_touch_up=do_touch_up))
+            await self._simulate_a_normal_touch(touch, do_touch_up=do_touch_up)
 
     def start_dragging_from_others_touch(self, receiver: Widget, touch):
         '''
