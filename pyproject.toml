@@ -32,7 +32,7 @@ asynckivy = "~0.6"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.1.2"
 flake8 = "^5.0.4"
-kivy = "==2.2.1"
+kivy = "==2.3.0"
 
 [build-system]
 requires = ["poetry-core"]
