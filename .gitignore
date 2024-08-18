@@ -103,8 +103,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-Pipfile.lock
-poetry.lock
 .vscode
 
 # Spyder project settings
