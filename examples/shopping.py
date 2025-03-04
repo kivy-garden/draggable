@@ -123,7 +123,7 @@ class ShoppingApp(App):
         return SHMain()
 
     def on_start(self):
-        ak.start(self.root.main(db_path=__file__ + r".sqlite3"))
+        ak.managed_start(self.root.main(db_path=__file__ + r".sqlite3"))
 
 
 class SHMain(F.BoxLayout):

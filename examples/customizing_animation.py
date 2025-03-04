@@ -63,7 +63,9 @@ class MyDraggable(KXDraggableBehavior, Label):
         self.parent.remove_widget(self)
         ctx.droppable.add_widget(self)
         abs_ = abs
-        async for p in ak.anim_with_ratio(duration=.2):
+        async for p in ak.anim_with_ratio(base=.2):
+            if p > 1.:
+                break
             self._scale = abs_(p * .8 - .4) + .6
 
 

@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install pytest flake8 kivy[base]==2.3.0 "asynckivy>=0.6<0.7" "asyncgui>=0.6<0.7"
+        python -m pip install pytest flake8 kivy[base]==2.3.0 "asynckivy>=0.7.1<0.9"
     - name: Install flower
       run: python -m pip install -e .
     - name: Lint with flake8

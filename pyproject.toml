@@ -27,7 +27,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-asynckivy = "~0.6"
+asynckivy = ">=0.7.1,<0.9"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.1.2"

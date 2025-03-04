@@ -94,9 +94,9 @@ class KXDraggableBehavior:
         if self._is_a_touch_potentially_a_dragging_gesture(touch) and self._can_be_dragged:
             touch.ud[self.__ud_key] = None
             if self.drag_timeout:
-                ak.start(self._see_if_a_touch_actually_is_a_dragging_gesture(touch))
+                ak.managed_start(self._see_if_a_touch_actually_is_a_dragging_gesture(touch))
             else:
-                ak.start(self._treat_a_touch_as_a_drag(touch))
+                ak.managed_start(self._treat_a_touch_as_a_drag(touch))
             return True
         else:
             touch.ud[self.__ud_key] = None
@@ -110,23 +110,22 @@ class KXDraggableBehavior:
             ox, oy = touch.opos
 
             do_touch_up = True
-            async with ak.watch_touch(self, touch) as in_progress:
-                while await in_progress():
-                    dx = abs_(touch.x - ox)
-                    dy = abs_(touch.y - oy)
-                    if dy > drag_distance or dx > drag_distance:
-                        do_touch_up = False
-                        break
+            async for __ in ak.rest_of_touch_events(self, touch):
+                dx = abs_(touch.x - ox)
+                dy = abs_(touch.y - oy)
+                if dy > drag_distance or dx > drag_distance:
+                    do_touch_up = False
+                    break
 
         is_a_dragging_gesture = bg_task.finished
         if is_a_dragging_gesture:
-            ak.start(
+            ak.managed_start(
                 self._treat_a_touch_as_a_drag(touch, do_transform=True)
                 if self._can_be_dragged else
                 self._simulate_a_normal_touch(touch, do_transform=True)
             )
         else:
-            ak.start(self._simulate_a_normal_touch(touch, do_touch_up=do_touch_up))
+            ak.managed_start(self._simulate_a_normal_touch(touch, do_touch_up=do_touch_up))
 
     def start_dragging_from_others_touch(self, receiver: Widget, touch):
         '''
@@ -139,7 +138,7 @@ class KXDraggableBehavior:
         if touch.time_end != -1:
             return
         touch.ud[self.__ud_key] = None
-        ak.start(self._treat_a_touch_as_a_drag(touch, touch_receiver=receiver))
+        ak.managed_start(self._treat_a_touch_as_a_drag(touch, touch_receiver=receiver))
 
     async def _treat_a_touch_as_a_drag(self, touch, *, do_transform=False, touch_receiver=None):
         try:
@@ -189,10 +188,9 @@ class KXDraggableBehavior:
             # actual dragging process
             self.dispatch('on_drag_start', touch, ctx)
             self.drag_state = 'started'
-            async with ak.watch_touch(self, touch) as in_progress:
-                while await in_progress():
-                    self.x = touch.x - offset_x
-                    self.y = touch.y - offset_y
+            async for __ in ak.rest_of_touch_events(self, touch):
+                self.x = touch.x - offset_x
+                self.y = touch.y - offset_y
 
             # wait for other widgets to react to 'on_touch_up'
             await ak.sleep(-1)
@@ -356,7 +354,7 @@ class KXReorderableBehavior:
             if drag_cls is not None:
                 touch_ud[ud_key] = None
                 if drag_cls in self.drag_classes:
-                    ak.start(ak.wait_any(
+                    ak.managed_start(ak.wait_any(
                         self._place_a_spacer_widget_under_the_drag(touch),
                         ak.event(touch.ud['kivyx_draggable'], 'on_drag_end'),
                     ))
@@ -379,23 +377,22 @@ class KXReorderableBehavior:
                 touch_ud['kivyx_drag_ctx'].original_state,
                 ignore_parent=True)
             add_widget(spacer)
-            async with ak.watch_touch(self, touch) as in_progress:
-                while await in_progress():
-                    x, y = touch.pos
-                    if collide_point(x, y):
-                        widget, idx = get_widget_under_drag(x, y)
-                        if widget is spacer:
+            async for __ in ak.rest_of_touch_events(self, touch):
+                x, y = touch.pos
+                if collide_point(x, y):
+                    widget, idx = get_widget_under_drag(x, y)
+                    if widget is spacer:
+                        continue
+                    if widget is None:
+                        if self.children:
                             continue
-                        if widget is None:
-                            if self.children:
-                                continue
-                            else:
-                                idx = 0
-                        remove_widget(spacer)
-                        add_widget(spacer, index=idx)
-                    else:
-                        del touch_ud[self.__ud_key]
-                        return
+                        else:
+                            idx = 0
+                    remove_widget(spacer)
+                    add_widget(spacer, index=idx)
+                else:
+                    del touch_ud[self.__ud_key]
+                    return
             if 'kivyx_droppable' not in touch_ud:
                 touch_ud['kivyx_droppable'] = self
                 touch_ud['kivyx_droppable_index'] = self.children.index(spacer)

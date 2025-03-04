@@ -154,7 +154,7 @@ class MyDraggable(KXDraggableBehavior, Widget):
 ここで
 
 - default handlerをasync関数にするのと
-- default handlerは普通の関数のままにしておいて内部で`asynckivy.start()`を用いてasync関数を立ち上げるのと
+- default handlerは普通の関数のままにしておいて内部で`asynckivy.managed_start()`を用いてasync関数を立ち上げるのと
 
 の違いについて説明します。
 前者ではasync関数のcodeがdrag処理の間に挟み込まれcodeが`on_drag_end`が起こるより前に完遂される事が保証されるのに対し、
@@ -166,7 +166,7 @@ import asynckivy as ak
 
 class MyDraggable(KXDraggableBehavior, Widget):
     def on_drag_succeed(self, touch, ctx):
-        ak.start(self._fade_out(touch))
+        ak.managed_start(self._fade_out(touch))
 
     async def _fade_out(self, touch):
         await ak.anim_attrs(self, opacity=0)
