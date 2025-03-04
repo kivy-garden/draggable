@@ -46,7 +46,9 @@ class MyDraggable(KXDraggableBehavior, Label):
     async def on_drag_fail(self, touch, ctx):
         with ak.transform(self) as ig:
             ig.add(rotate := Rotate(origin=self.center))
-            async for p in ak.anim_with_ratio(duration=.4):
+            async for p in ak.anim_with_ratio(base=.4):
+                if p > 1.:
+                    break
                 rotate.angle = p * 720.
                 self.opacity = 1. - p
             self.parent.remove_widget(self)
@@ -58,7 +60,9 @@ class MyDraggable(KXDraggableBehavior, Label):
         abs_ = abs
         with ak.transform(self) as ig:
             ig.add(scale := Scale(origin=self.center))
-            async for p in ak.anim_with_ratio(duration=.2):
+            async for p in ak.anim_with_ratio(base=.2):
+                if p > 1.:
+                    break
                 scale.x = scale.y = abs_(p * .8 - .4) + .6
 
 

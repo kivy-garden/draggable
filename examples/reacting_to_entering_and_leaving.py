@@ -107,7 +107,7 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
             if drag_cls is not None:
                 touch_ud[ud_key] = None
                 if drag_cls in self.drag_classes:
-                    ak.start(ak.wait_any(
+                    ak.managed_start(ak.wait_any(
                         self._watch_touch(touch),
                         ak.event(touch.ud['kivyx_draggable'], 'on_drag_end'),
                     ))
@@ -120,10 +120,9 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
 
         self.dispatch('on_drag_enter', touch, ctx, draggable)
         try:
-            async with ak.watch_touch(self, touch) as in_progress:
-                while await in_progress():
-                    if not collide_point(*touch.pos):
-                        return
+            async for __ in ak.rest_of_touch_events(self, touch):
+                if not collide_point(*touch.pos):
+                    return
         finally:
             self.dispatch('on_drag_leave', touch, ctx, draggable)
             del touch.ud[self.__ud_key]
