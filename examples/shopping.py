@@ -1,5 +1,7 @@
 '''
 https://www.youtube.com/watch?v=PNj8uEdd5c0
+
+To animate widgets like in the video: pip install kivy-garden-posani
 '''
 
 import itertools
@@ -16,8 +18,19 @@ from kivy.factory import Factory as F
 import asynckivy as ak
 from kivy_garden.draggable import KXDraggableBehavior
 
+try:
+    from kivy_garden import posani
+    posani.install(target="SHFood")
+except ImportError:
+    import types
+    posani = types.SimpleNamespace(
+        activate=lambda *args: None,
+        deactivate=lambda *args: None,
+    )
 
 KV_CODE = r'''
+#:import posani __main__.posani
+
 <SHLabel@Label,SHButton@Button>:
     size_hint_min: [v + dp(8) for v in self.texture_size]
     halign: 'center'
@@ -30,6 +43,8 @@ KV_CODE = r'''
     size: '200dp', '200dp'
     size_hint: None, None
     opacity: .5 if self.is_being_dragged else 1.
+    on_drag_start: posani.deactivate(self)
+    on_drag_end: posani.activate(self)
     canvas.before:
         Color:
             rgba: .4, .4, .4, 1
