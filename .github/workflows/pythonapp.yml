@@ -1,9 +1,9 @@
 name: Garden flower
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   linux_test:
