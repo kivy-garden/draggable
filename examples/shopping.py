@@ -4,12 +4,13 @@ https://www.youtube.com/watch?v=PNj8uEdd5c0
 To animate widgets like in the video: pip install kivy-garden-posani
 '''
 
+from collections.abc import Iterable
 import itertools
 from contextlib import closing
 from os import PathLike
 import sqlite3
-from typing import Tuple, Iterable
 from dataclasses import dataclass
+
 from kivy.app import App
 from kivy.properties import ObjectProperty
 from kivy.clock import Clock
@@ -23,12 +24,25 @@ try:
     posani.install(target="SHFood")
 except ImportError:
     import types
+
+    def do_nothing(*args, **kwargs):
+        pass
     posani = types.SimpleNamespace(
-        activate=lambda *args: None,
-        deactivate=lambda *args: None,
+        activate=do_nothing,
+        deactivate=do_nothing,
     )
 
+
+def detect_image_format(image_data: bytes) -> str:
+    if image_data.startswith(b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"):
+        return "png"
+    elif image_data.startswith(b"\xFF\xD8"):
+        return "jpg"
+    raise ValueError("Unknown image format")
+
+
 KV_CODE = r'''
+#:import ak asynckivy
 #:import posani __main__.posani
 
 <SHLabel@Label,SHButton@Button>:
@@ -51,13 +65,13 @@ KV_CODE = r'''
         Line:
             rectangle: (*self.pos, *self.size, )
     Image:
-        allow_stretch: True
+        fit_mode: "contain"
         texture: root.datum.texture
         size_hint_y: 3.
     SHLabel:
         text: '{} ({} yen)'.format(root.datum.name, root.datum.price)
 
-<SHShelf@KXReorderableBehavior+RVLikeBehavior+StackLayout>:
+<SHShelf@KXReorderableBehavior+SemiRecycleBehavior+StackLayout>:
     padding: '10dp'
     spacing: '10dp'
     size_hint_min_y: self.minimum_height
@@ -79,6 +93,7 @@ KV_CODE = r'''
             ScrollView:
                 size_hint_y: 1000.
                 always_overscroll: False
+                do_scroll_x: False
                 SHShelf:
                     id: shelf
         Splitter:
@@ -95,6 +110,7 @@ KV_CODE = r'''
                 ScrollView:
                     size_hint_y: 1000.
                     always_overscroll: False
+                    do_scroll_x: False
                     SHShelf:
                         id: cart
     BoxLayout:
@@ -115,7 +131,7 @@ KV_CODE = r'''
         Widget:
         SHButton:
             text: 'total price'
-            on_press: root.show_total_price()
+            on_press: ak.managed_start(root.show_total_price())
         SHButton:
             text: 'sort by price\n(ascend)'
             on_press: cart.data = sorted(cart.data, key=lambda d: d.price)
@@ -138,106 +154,92 @@ class ShoppingApp(App):
         return SHMain()
 
     def on_start(self):
-        ak.managed_start(self.root.main(db_path=__file__ + r".sqlite3"))
+        self.root.main(db_path=__file__ + r".sqlite3")
 
 
 class SHMain(F.BoxLayout):
-    def show_total_price(self, *, _cache=[]):
-        try:
-            popup = _cache.pop()
-        except IndexError:
-            popup = F.Popup(
-                size_hint=(.5, .2, ),
-                title='Total',
-                content=F.Label(),
-            )
-            popup.bind(on_dismiss=lambda popup, _cache=_cache: _cache.append(popup))
+    async def show_total_price(self, *, _cache=[]):
+        popup = _cache.pop() if _cache else F.Popup(
+            size_hint=(.5, .2, ),
+            title="Total",
+            title_size="20sp",
+            content=F.Label(font_size="20sp"),
+        )
         total_price = sum(d.price for d in self.ids.cart.data)
         popup.content.text = f"{total_price} yen"
         popup.open()
+        try:
+            await ak.event(popup, "on_dismiss")
+        finally:
+            await ak.sleep(popup._anim_duration + 0.1)
+            _cache.append(popup)
 
-    async def main(self, db_path: PathLike):
+    def main(self, db_path: PathLike):
+        import os.path
         from random import randint
+
+        if not os.path.exists(db_path):
+            try:
+                self._init_database(db_path)
+            except Exception:
+                os.remove(db_path)
+                raise
+        self.ids.shelf.data = [
+            food
+            for food in self._load_database(db_path)
+            for __ in range(randint(2, 4))
+        ]
+
+    @staticmethod
+    def _load_database(db_path: PathLike) -> list[Food]:
         from io import BytesIO
         from kivy.core.image import Image as CoreImage
-        conn = await self._load_database(db_path)
-        with closing(conn.cursor()) as cur:
+
+        with sqlite3.connect(str(db_path)) as conn:
             # FIXME: It's probably better to ``Texture.add_reload_observer()``.
-            self.food_textures = textures = {
-                name: CoreImage(BytesIO(image_data), ext='png').texture
-                for name, image_data in cur.execute("SELECT name, image FROM Foods")
-            }
-            self.ids.shelf.data = [
-                Food(name=name, price=price, texture=textures[name])
-                for name, price in cur.execute("SELECT name, price FROM Foods")
-                for __ in range(randint(2, 4))
+            return [
+                Food(name=name, price=price, texture=CoreImage(BytesIO(image_data), ext=image_type).texture)
+                for name, price, image_data, image_type in conn.execute("SELECT name, price, image, image_type FROM Foods")
             ]
 
     @staticmethod
-    async def _load_database(db_path: PathLike) -> sqlite3.Connection:
-        from os.path import exists
-        already_exists = exists(db_path)
-        conn = sqlite3.connect(db_path)
-        conn.execute("PRAGMA foreign_keys = ON")
-        if not already_exists:
-            try:
-                await SHMain._init_database(conn)
-            except Exception:
-                from os import remove
-                remove(db_path)
-                raise
-            else:
-                conn.commit()
-        return conn
-
-    @staticmethod
-    async def _init_database(conn: sqlite3.Connection):
-        from concurrent.futures import ThreadPoolExecutor
+    def _init_database(db_path: PathLike):
         import requests
-        import asynckivy as ak
-        with closing(conn.cursor()) as cur:
-            cur.executescript("""
+
+        FOOD_DATA = (
+            # (name, price, image_url)
+            ("blueberry", 500, r"https://3.bp.blogspot.com/-RVk4JCU_K2M/UvTd-IhzTvI/AAAAAAAAdhY/VMzFjXNoRi8/s180-c/fruit_blueberry.png"),
+            ("cacao", 800, r"https://3.bp.blogspot.com/-WT_RsvpvAhc/VPQT6ngLlmI/AAAAAAAAsEA/aDIU_F9TYc8/s180-c/fruit_cacao_kakao.png"),
+            ("dragon fruit", 1200, r"https://1.bp.blogspot.com/-hATAhM4UmCY/VGLLK4mVWYI/AAAAAAAAou4/-sW2fvsEnN0/s180-c/fruit_dragonfruit.png"),
+            ("kiwi", 130, r"https://2.bp.blogspot.com/-Y8xgv2nvwEs/WCdtGij7aTI/AAAAAAAA_fo/PBXfb8zCiQAZ8rRMx-DNclQvOHBbQkQEwCLcB/s180-c/fruit_kiwi_green.png"),
+            ("lemon", 200, r"https://2.bp.blogspot.com/-UqVL2dBOyMc/WxvKDt8MQbI/AAAAAAABMmk/qHrz-vwCKo8okZsZpZVDsHLsKFXdI1BjgCLcBGAs/s180-c/fruit_lemon_tategiri.png"),
+            ("mangosteen", 300, r"https://4.bp.blogspot.com/-tc72dGzUpww/WGYjEAwIauI/AAAAAAABAv8/xKvtWmqeKFcro6otVdLi5FFF7EoVxXiEwCLcB/s180-c/fruit_mangosteen.png"),
+            ("apple", 150, r"https://4.bp.blogspot.com/-uY6ko43-ABE/VD3RiIglszI/AAAAAAAAoEA/kI39usefO44/s180-c/fruit_ringo.png"),
+            ("orange", 100, r"https://1.bp.blogspot.com/-fCrHtwXvM6w/Vq89A_TvuzI/AAAAAAAA3kE/fLOFjPDSRn8/s180-c/fruit_slice10_orange.png"),
+            ("soldum", 400, r"https://2.bp.blogspot.com/-FtWOiJkueNA/WK7e09oIUyI/AAAAAAABB_A/ry22yAU3W9sbofMUmA5-nn3D45ix_Y5RwCLcB/s180-c/fruit_soldum.png"),
+            ("corn", 50, r"https://1.bp.blogspot.com/-RAJBy7nx2Ro/XkZdTINEtOI/AAAAAAABXWE/x8Sbcghba9UzR8Ppafozi4_cdmD1pawowCNcBGAsYHQ/s180-c/vegetable_toumorokoshi_corn_wagiri.png"),
+            ("aloe", 400, r"https://4.bp.blogspot.com/-v7OAB-ULlrs/VVGVQ1FCjxI/AAAAAAAAtjg/H09xS1Nf9_A/s180-c/plant_aloe_kaniku.png"),
+        )
+        with requests.Session() as session:
+            FOOD_DATA = tuple(
+                (name, price, c := session.get(image_url).content, detect_image_format(c))
+                for name, price, image_url in FOOD_DATA
+            )
+        with sqlite3.connect(str(db_path)) as conn, closing(conn.cursor()) as cur:
+            cur.execute("""
                 CREATE TABLE Foods (
                     name TEXT NOT NULL UNIQUE,
                     price INT NOT NULL,
-                    image_url TEXT NOT NULL,
-                    image BLOB DEFAULT NULL,
+                    image BLOB NOT NULL,
+                    image_type TEXT NOT NULL,
                     PRIMARY KEY (name)
                 );
-                INSERT INTO Foods(name, price, image_url) VALUES
-                    ('blueberry', 500, 'https://3.bp.blogspot.com/-RVk4JCU_K2M/UvTd-IhzTvI/AAAAAAAAdhY/VMzFjXNoRi8/s180-c/fruit_blueberry.png'),
-                    ('cacao', 800, 'https://3.bp.blogspot.com/-WT_RsvpvAhc/VPQT6ngLlmI/AAAAAAAAsEA/aDIU_F9TYc8/s180-c/fruit_cacao_kakao.png'),
-                    ('dragon fruit', 1200, 'https://1.bp.blogspot.com/-hATAhM4UmCY/VGLLK4mVWYI/AAAAAAAAou4/-sW2fvsEnN0/s180-c/fruit_dragonfruit.png'),
-                    ('kiwi', 130, 'https://2.bp.blogspot.com/-Y8xgv2nvwEs/WCdtGij7aTI/AAAAAAAA_fo/PBXfb8zCiQAZ8rRMx-DNclQvOHBbQkQEwCLcB/s180-c/fruit_kiwi_green.png'),
-                    ('lemon', 200, 'https://2.bp.blogspot.com/-UqVL2dBOyMc/WxvKDt8MQbI/AAAAAAABMmk/qHrz-vwCKo8okZsZpZVDsHLsKFXdI1BjgCLcBGAs/s180-c/fruit_lemon_tategiri.png'),
-                    ('mangosteen', 300, 'https://4.bp.blogspot.com/-tc72dGzUpww/WGYjEAwIauI/AAAAAAABAv8/xKvtWmqeKFcro6otVdLi5FFF7EoVxXiEwCLcB/s180-c/fruit_mangosteen.png'),
-                    ('apple', 150, 'https://4.bp.blogspot.com/-uY6ko43-ABE/VD3RiIglszI/AAAAAAAAoEA/kI39usefO44/s180-c/fruit_ringo.png'),
-                    ('orange', 100, 'https://1.bp.blogspot.com/-fCrHtwXvM6w/Vq89A_TvuzI/AAAAAAAA3kE/fLOFjPDSRn8/s180-c/fruit_slice10_orange.png'),
-                    ('soldum', 400, 'https://2.bp.blogspot.com/-FtWOiJkueNA/WK7e09oIUyI/AAAAAAABB_A/ry22yAU3W9sbofMUmA5-nn3D45ix_Y5RwCLcB/s180-c/fruit_soldum.png'),
-                    ('corn', 50, 'https://1.bp.blogspot.com/-RAJBy7nx2Ro/XkZdTINEtOI/AAAAAAABXWE/x8Sbcghba9UzR8Ppafozi4_cdmD1pawowCNcBGAsYHQ/s180-c/vegetable_toumorokoshi_corn_wagiri.png'),
-                    ('aloe', 400, 'https://4.bp.blogspot.com/-v7OAB-ULlrs/VVGVQ1FCjxI/AAAAAAAAtjg/H09xS1Nf9_A/s180-c/plant_aloe_kaniku.png');
             """)
-
-            # download images
-            # FIXME: The Session object may not be thread-safe so it's probably better not to share it between threads...
-            with ThreadPoolExecutor() as executer, requests.Session() as session:
-                async def download_one_image(name, image_url) -> Tuple[bytes, str]:
-                    image = await ak.run_in_executor(executer, lambda: session.get(image_url).content)
-                    return (image, name)
-                tasks = await ak.wait_all(*(
-                    download_one_image(name, image_url)
-                    for name, image_url in cur.execute("SELECT name, image_url FROM Foods")
-                ))
-
-            # save images
-            cur.executemany(
-                "UPDATE Foods SET image = ? WHERE name = ?",
-                (task.result for task in tasks),
-            )
+            cur.executemany("INSERT INTO Foods(name, price, image, image_type) VALUES (?, ?, ?, ?)", FOOD_DATA)
 
 
 class SHFood(KXDraggableBehavior, F.BoxLayout):
-    datum = ObjectProperty(Food(), rebind=True)
+    datum: Food = ObjectProperty(Food(), rebind=True)
 
 
 class EquitableBoxLayout(F.BoxLayout):
@@ -250,10 +252,10 @@ class EquitableBoxLayout(F.BoxLayout):
         return any([c.dispatch('on_touch_up', touch) for c in self.children])
 
 
-class RVLikeBehavior:
-    '''Mix-in class that adds RecyclewView-like interface to layouts. But
-    unlike RecycleView, this one creates view widgets as much as the number
-    of the data.
+class SemiRecycleBehavior:
+    '''
+    Mix-in class that adds RecyclewView-like interface to layouts.
+    But unlike RecycleView, this one creates view widgets as much as the number of the data.
     '''
 
     viewclass = ObjectProperty()
@@ -293,7 +295,7 @@ class RVLikeBehavior:
             w.datum = datum
             self.add_widget(w)
         params.clear()
-F.register('RVLikeBehavior', cls=RVLikeBehavior)
+F.register("SemiRecycleBehavior", cls=SemiRecycleBehavior)
 
 
 if __name__ == '__main__':
