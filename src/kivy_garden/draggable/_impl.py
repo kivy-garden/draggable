@@ -202,10 +202,9 @@ class KXDraggableBehavior:
             else:
                 r = self.dispatch('on_drag_succeed', touch, ctx)
                 self.drag_state = 'succeeded'
-            async with ak.disable_cancellation():
-                if isawaitable(r):
-                    await r
-                await ak.sleep(-1)  # This is necessary in order to work with Magnet iirc.
+            if isawaitable(r):
+                await r
+            await ak.sleep(-1)  # This is necessary in order to work with Magnet iirc.
         except ak.Cancelled:
             self.dispatch('on_drag_cancel', touch, ctx)
             self.drag_state = 'cancelled'

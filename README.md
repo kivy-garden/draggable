@@ -22,7 +22,7 @@ From now on, I use the term `droppable` to refer both `KXReorderableBehavior` an
 
 ## Installation
 
-It's recommended to pin the minor version, because if it changed, it means some important breaking changes occurred.
+Pin the minor version.
 
 ```
 poetry add kivy_garden.draggable@~0.2
@@ -73,6 +73,10 @@ stateDiagram-v2
 
     on_drag_end --> [*]
 ```
+
+**Important Change**
+
+Starting with version 0.3, `on_drag_cancel` may occur after `on_drag_fail` or `on_drag_succeed` if their default handler is an async function.
 
 ## Cancellation
 
