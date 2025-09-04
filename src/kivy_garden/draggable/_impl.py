@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 from inspect import isawaitable
 from dataclasses import dataclass
-from contextlib import nullcontext
+from contextlib import nullcontext, asynccontextmanager
 
 from kivy.properties import (
     BooleanProperty, ListProperty, StringProperty, NumericProperty, OptionProperty, AliasProperty,
@@ -17,6 +17,31 @@ from ._utils import (
     temp_transform, _create_spacer,
     save_widget_state, restore_widget_state,
 )
+
+
+@asynccontextmanager
+async def _rest_of_touch_events(widget, touch):
+    '''
+    A variant of asynckivy.rest_of_touch_events, recommended over the original when Kivy runs in async mode.
+
+    .. code-block::
+
+        async with _rest_of_touch_events(widget, touch) as on_touch_move:
+            while True:
+                await on_touch_move()
+                ...
+    '''
+    touch.grab(widget)
+    try:
+        def filter(w, t, touch=touch):
+            return t is touch and t.grab_current is w
+        async with (
+            ak.move_on_when(ak.event(widget, 'on_touch_up', filter=filter, stop_dispatching=True)),
+            ak.event_freq(widget, 'on_touch_move', filter=filter, stop_dispatching=True) as on_touch_move,
+        ):
+            yield on_touch_move
+    finally:
+        touch.ungrab(widget)
 
 
 @dataclass
@@ -110,12 +135,14 @@ class KXDraggableBehavior:
             ox, oy = touch.opos
 
             do_touch_up = True
-            async for __ in ak.rest_of_touch_events(self, touch):
-                dx = abs_(touch.x - ox)
-                dy = abs_(touch.y - oy)
-                if dy > drag_distance or dx > drag_distance:
-                    do_touch_up = False
-                    break
+            async with _rest_of_touch_events(self, touch) as on_touch_move:
+                while True:
+                    await on_touch_move()
+                    dx = abs_(touch.x - ox)
+                    dy = abs_(touch.y - oy)
+                    if dy > drag_distance or dx > drag_distance:
+                        do_touch_up = False
+                        break
 
         is_a_dragging_gesture = bg_task.finished
         if is_a_dragging_gesture:
@@ -188,9 +215,11 @@ class KXDraggableBehavior:
             # actual dragging process
             self.dispatch('on_drag_start', touch, ctx)
             self.drag_state = 'started'
-            async for __ in ak.rest_of_touch_events(self, touch):
-                self.x = touch.x - offset_x
-                self.y = touch.y - offset_y
+            async with _rest_of_touch_events(self, touch) as on_touch_move:
+                while True:
+                    await on_touch_move()
+                    self.x = touch.x - offset_x
+                    self.y = touch.y - offset_y
 
             # wait for other widgets to react to 'on_touch_up'
             await ak.sleep(-1)
@@ -376,22 +405,24 @@ class KXReorderableBehavior:
                 touch_ud['kivyx_drag_ctx'].original_state,
                 ignore_parent=True)
             add_widget(spacer)
-            async for __ in ak.rest_of_touch_events(self, touch):
-                x, y = touch.pos
-                if collide_point(x, y):
-                    widget, idx = get_widget_under_drag(x, y)
-                    if widget is spacer:
-                        continue
-                    if widget is None:
-                        if self.children:
+            async with _rest_of_touch_events(self, touch) as on_touch_move:
+                while True:
+                    await on_touch_move()
+                    x, y = touch.pos
+                    if collide_point(x, y):
+                        widget, idx = get_widget_under_drag(x, y)
+                        if widget is spacer:
                             continue
-                        else:
-                            idx = 0
-                    remove_widget(spacer)
-                    add_widget(spacer, index=idx)
-                else:
-                    del touch_ud[self.__ud_key]
-                    return
+                        if widget is None:
+                            if self.children:
+                                continue
+                            else:
+                                idx = 0
+                        remove_widget(spacer)
+                        add_widget(spacer, index=idx)
+                    else:
+                        del touch_ud[self.__ud_key]
+                        return
             if 'kivyx_droppable' not in touch_ud:
                 touch_ud['kivyx_droppable'] = self
                 touch_ud['kivyx_droppable_index'] = self.children.index(spacer)

@@ -6,6 +6,7 @@ from kivy.uix.label import Label
 import asynckivy as ak
 
 from kivy_garden.draggable import KXDraggableBehavior, KXDroppableBehavior
+from kivy_garden.draggable._impl import _rest_of_touch_events
 
 KV_CODE = '''
 <MyDroppable>:
@@ -120,9 +121,11 @@ class ReactiveDroppableBehavior(KXDroppableBehavior):
 
         self.dispatch('on_drag_enter', touch, ctx, draggable)
         try:
-            async for __ in ak.rest_of_touch_events(self, touch):
-                if not collide_point(*touch.pos):
-                    return
+            async with _rest_of_touch_events(self, touch) as on_touch_move:
+                while True:
+                    await on_touch_move()
+                    if not collide_point(*touch.pos):
+                        return
         finally:
             self.dispatch('on_drag_leave', touch, ctx, draggable)
             del touch.ud[self.__ud_key]
