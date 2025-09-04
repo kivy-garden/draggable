@@ -60,6 +60,11 @@ stateDiagram-v2
     on_drag_end --> [*]
 ```
 
+**重要な変更**
+
+version 0.2 は上の図の通りに動きますが 0.3 からは `on_drag_cancel` が `on_drag_fail` や`on_drag_succeed` の後に起こりえます。
+起こるのは `on_drag_fail` 或いは `on_drag_succeed` のdefault handlerがasync関数として定義されていて、その実行中に `draggable.cancel()` が呼ばれたときです。
+
 ## 受け入れるdragの選別
 
 図に書かれているように利用者の指が離れた時にdragが受け入れられるか否かの判断がなされ、
