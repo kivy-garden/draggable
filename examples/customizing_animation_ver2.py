@@ -46,11 +46,16 @@ class MyDraggable(KXDraggableBehavior, Label):
     async def on_drag_fail(self, touch, ctx):
         with ak.transform(self) as ig:
             ig.add(rotate := Rotate(origin=self.center))
-            async for p in ak.anim_with_ratio(base=.4):
-                if p > 1.:
-                    break
-                rotate.angle = p * 720.
-                self.opacity = 1. - p
+            async with ak.sleep_freq() as sleep:
+                et = 0.  # total elapsed time of the loop below
+                duration = .4
+                while True:
+                    et += await sleep()
+                    if et > duration:
+                        break
+                    p = et / duration
+                    rotate.angle = p * 720.
+                    self.opacity = 1. - p
             self.parent.remove_widget(self)
 
     async def on_drag_succeed(self, touch, ctx):
@@ -60,10 +65,14 @@ class MyDraggable(KXDraggableBehavior, Label):
         abs_ = abs
         with ak.transform(self) as ig:
             ig.add(scale := Scale(origin=self.center))
-            async for p in ak.anim_with_ratio(base=.2):
-                if p > 1.:
-                    break
-                scale.x = scale.y = abs_(p * .8 - .4) + .6
+            async with ak.sleep_freq() as sleep:
+                et = 0.  # total elapsed time of the loop below
+                duration = .2
+                while True:
+                    et += await sleep()
+                    if et > duration:
+                        break
+                    scale.x = scale.y = abs_(et / duration * .8 - .4) + .6
 
 
 class Cell(KXDroppableBehavior, FloatLayout):

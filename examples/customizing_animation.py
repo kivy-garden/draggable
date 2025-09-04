@@ -63,10 +63,14 @@ class MyDraggable(KXDraggableBehavior, Label):
         self.parent.remove_widget(self)
         ctx.droppable.add_widget(self)
         abs_ = abs
-        async for p in ak.anim_with_ratio(base=.2):
-            if p > 1.:
-                break
-            self._scale = abs_(p * .8 - .4) + .6
+        async with ak.sleep_freq() as sleep:
+            et = 0.  # total elapsed time of the loop below
+            duration = .2
+            while True:
+                et += await sleep()
+                if et > duration:
+                    break
+                self._scale = abs_(et / duration * .8 - .4) + .6
 
 
 class Cell(KXDroppableBehavior, FloatLayout):
