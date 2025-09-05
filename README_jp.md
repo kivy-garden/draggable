@@ -14,11 +14,10 @@ drag操作によってwidgetを並び替えたいなら`KXReorderableBehavior`�
 
 ## Install方法
 
-このmoduleのminor versionが変わった時は何らかの重要な互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
+minor versionまでを固定してください。
 
 ```
-poetry add kivy_garden.draggable@~0.2
-pip install "kivy_garden.draggable>=0.2,<0.3"
+pip install "kivy_garden.draggable>=0.3,<0.4"
 ```
 
 ## dragが始まる条件

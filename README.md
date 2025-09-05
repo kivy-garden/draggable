@@ -25,8 +25,7 @@ From now on, I use the term `droppable` to refer both `KXReorderableBehavior` an
 Pin the minor version.
 
 ```
-poetry add kivy_garden.draggable@~0.2
-pip install "kivy_garden.draggable>=0.2,<0.3"
+pip install "kivy_garden.draggable>=0.3,<0.4"
 ```
 
 ## Main differences from drag_n_drop
