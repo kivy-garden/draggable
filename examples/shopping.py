@@ -17,7 +17,7 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.factory import Factory as F
 import asynckivy as ak
-from kivy_garden.draggable import KXDraggableBehavior
+from kivy_garden.draggable import KXDraggableBehavior, ongoing_drags
 
 try:
     from kivy_garden import posani
@@ -118,26 +118,40 @@ KV_CODE = r'''
         height: self.minimum_height
         SHButton:
             text: 'sort by price\n(ascend)'
-            on_press: shelf.data = sorted(shelf.data, key=lambda d: d.price)
+            on_press:
+                app.cancel_ongoing_drags()
+                shelf.data = sorted(shelf.data, key=lambda d: d.price)
         SHButton:
             text: 'sort by price\n(descend)'
-            on_press: shelf.data = sorted(shelf.data, key=lambda d: d.price, reverse=True)
+            on_press:
+                app.cancel_ongoing_drags()
+                shelf.data = sorted(shelf.data, key=lambda d: d.price, reverse=True)
         SHButton:
             text: 'sort by name\n(ascend)'
-            on_press: shelf.data = sorted(shelf.data, key=lambda d: d.name)
+            on_press:
+                app.cancel_ongoing_drags()
+                shelf.data = sorted(shelf.data, key=lambda d: d.name)
         SHButton:
             text: 'sort by name\n(descend)'
-            on_press: shelf.data = sorted(shelf.data, key=lambda d: d.name, reverse=True)
+            on_press:
+                app.cancel_ongoing_drags()
+                shelf.data = sorted(shelf.data, key=lambda d: d.name, reverse=True)
         Widget:
         SHButton:
             text: 'total price'
-            on_press: ak.managed_start(root.show_total_price())
+            on_press:
+                app.cancel_ongoing_drags()
+                ak.managed_start(root.show_total_price())
         SHButton:
             text: 'sort by price\n(ascend)'
-            on_press: cart.data = sorted(cart.data, key=lambda d: d.price)
+            on_press:
+                app.cancel_ongoing_drags()
+                cart.data = sorted(cart.data, key=lambda d: d.price)
         SHButton:
             text: 'sort by price\n(descend)'
-            on_press: cart.data = sorted(cart.data, key=lambda d: d.price, reverse=True)
+            on_press:
+                app.cancel_ongoing_drags()
+                cart.data = sorted(cart.data, key=lambda d: d.price, reverse=True)
 '''
 
 
@@ -155,6 +169,17 @@ class ShoppingApp(App):
 
     def on_start(self):
         self.root.main(db_path=__file__ + r".sqlite3")
+
+    def cancel_ongoing_drags(self):
+        for draggable in ongoing_drags():
+            draggable.drag_cancel()
+
+
+def _reload_texture(BytesIO, CoreImage, image_data: bytes, image_type: str, texture):
+    # TODO: This function is untested because I don't know how to trigger an OpenGL context loss.
+    # https://kivy.org/doc/master/api-kivy.graphics.texture.html#reloading-the-texture
+    img = CoreImage(BytesIO(image_data), ext=image_type)
+    texture.blit_data(img._image._data[0])
 
 
 class SHMain(F.BoxLayout):
@@ -192,13 +217,17 @@ class SHMain(F.BoxLayout):
 
     @staticmethod
     def _load_database(db_path: PathLike) -> list[Food]:
+        from functools import partial
         from io import BytesIO
         from kivy.core.image import Image as CoreImage
 
         with sqlite3.connect(str(db_path)) as conn:
-            # FIXME: It's probably better to ``Texture.add_reload_observer()``.
+            reload_texture = partial(_reload_texture, BytesIO, CoreImage)
             return [
-                Food(name=name, price=price, texture=CoreImage(BytesIO(image_data), ext=image_type).texture)
+                (
+                    tex := CoreImage(BytesIO(image_data), ext=image_type).texture,
+                    tex.add_reload_observer(partial(reload_texture, image_data, image_type)),
+                ) and Food(name=name, price=price, texture=tex)
                 for name, price, image_data, image_type in conn.execute("SELECT name, price, image, image_type FROM Foods")
             ]
 
