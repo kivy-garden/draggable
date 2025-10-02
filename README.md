@@ -75,7 +75,7 @@ stateDiagram-v2
 
 **Important Change**
 
-Starting with version 0.3, `on_drag_cancel` may occur after `on_drag_fail` or `on_drag_succeed` if their default handler is an async function.
+Starting with version 0.3, an `on_drag_cancel` event can occur between `on_drag_fail` / `on_drag_succeed` and `on_drag_end` if their default handler is an async function.
 
 ## Cancellation
 
