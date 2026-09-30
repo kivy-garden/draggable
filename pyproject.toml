@@ -1,38 +1,37 @@
-[tool.poetry]
-name = "kivy-garden-draggable"
+[project]
+name = "kivy-garden-draggble"
 version = "0.3.0"
 description = "Drag & Drop Extension for Kivy"
-authors = ["Nattōsai Mitō <flow4re2c@gmail.com>"]
+authors = [
+    { name = "Nattosai Mito", email = "flow4re2c@gmail.com" }
+]
 license = "MIT"
-readme = 'README.md'
-repository = 'https://github.com/kivy-garden/draggable'
-homepage = 'https://github.com/kivy-garden/draggable'
-keywords = ['kivy']
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+keywords = ["kivy"]
 classifiers=[
     'Development Status :: 5 - Production/Stable',
-    'License :: OSI Approved :: MIT License',
     'Intended Audience :: Developers',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
-    'Programming Language :: Python :: 3.13',
     'Topic :: Software Development :: Libraries',
     'Operating System :: OS Independent',
 ]
-packages = [
-    { include = "kivy_garden", from = "src" },
+dependencies = [
+    "asynckivy>=0.12.0,<0.13",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-asynckivy = ">=0.9,<0.10"
+[project.urls]
+Repository = "https://github.com/kivy-garden/draggable"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.1.2"
-flake8 = "^5.0.4"
-kivy = ">=2,<3"
+[dependency-groups]
+dev = [
+    "kivy==2.3.1",
+    "pytest>=9.1.1",
+]
+
+[tool.uv.build-backend]
+module-name = "kivy_garden.draggable"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.11.16,<0.12.0"]
+build-backend = "uv_build"
