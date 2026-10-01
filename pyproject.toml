@@ -1,6 +1,6 @@
 [project]
 name = "kivy-garden-draggble"
-version = "0.3.0"
+version = "0.4.0.dev0"
 description = "Drag & Drop Extension for Kivy"
 authors = [
     { name = "Nattosai Mito", email = "flow4re2c@gmail.com" }
