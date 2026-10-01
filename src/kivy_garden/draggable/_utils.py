@@ -79,8 +79,3 @@ def _create_spacer(**kwargs):
         size=lambda __, value: setattr(rect_inst, 'size', value),
     )
     return spacer
-
-
-# leave the old names for backward compatibility
-save_widget_location = save_widget_state
-restore_widget_location = restore_widget_state
