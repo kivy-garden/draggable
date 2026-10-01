@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+import asynckivy as ak
+
 
 class temp_transform:
     __slots__ = ('_touch', '_func')
@@ -73,9 +75,7 @@ def _create_spacer(**kwargs):
             Color(.2, .2, .2, .7)
         else:
             Color(*rgba(color))
-        rect_inst = Rectangle(size=spacer.size)
-    spacer.bind(
-        pos=lambda __, value: setattr(rect_inst, 'pos', value),
-        size=lambda __, value: setattr(rect_inst, 'size', value),
-    )
+        rect_inst = Rectangle(size=spacer.size, pos=spacer.pos)
+    ak.sync_attr((spacer, "pos"), (rect_inst, "pos")).__enter__()
+    ak.sync_attr((spacer, "size"), (rect_inst, "size")).__enter__()
     return spacer

@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 from inspect import isawaitable
 from dataclasses import dataclass
-from contextlib import nullcontext, asynccontextmanager
+from contextlib import nullcontext
 
 from kivy.properties import (
     BooleanProperty, ListProperty, StringProperty, NumericProperty, OptionProperty, AliasProperty,
@@ -17,31 +17,6 @@ from ._utils import (
     temp_transform, _create_spacer,
     save_widget_state, restore_widget_state,
 )
-
-
-@asynccontextmanager
-async def _rest_of_touch_events(widget, touch):
-    '''
-    A variant of asynckivy.rest_of_touch_events, recommended over the original when Kivy runs in async mode.
-
-    .. code-block::
-
-        async with _rest_of_touch_events(widget, touch) as on_touch_move:
-            while True:
-                await on_touch_move()
-                ...
-    '''
-    touch.grab(widget)
-    try:
-        def filter(w, t, touch=touch):
-            return t is touch and t.grab_current is w
-        async with (
-            ak.move_on_when(ak.event(widget, 'on_touch_up', filter=filter, stop_dispatching=True)),
-            ak.event_freq(widget, 'on_touch_move', filter=filter, stop_dispatching=True) as on_touch_move,
-        ):
-            yield on_touch_move
-    finally:
-        touch.ungrab(widget)
 
 
 @dataclass
@@ -135,7 +110,7 @@ class KXDraggableBehavior:
             ox, oy = touch.opos
 
             do_touch_up = True
-            async with _rest_of_touch_events(self, touch) as on_touch_move:
+            async with ak.rest_of_touch_events(self, touch) as on_touch_move:
                 while True:
                     await on_touch_move()
                     dx = abs_(touch.x - ox)
@@ -215,7 +190,7 @@ class KXDraggableBehavior:
             # actual dragging process
             self.dispatch('on_drag_start', touch, ctx)
             self.drag_state = 'started'
-            async with _rest_of_touch_events(self, touch) as on_touch_move:
+            async with ak.rest_of_touch_events(self, touch) as on_touch_move:
                 while True:
                     await on_touch_move()
                     self.x = touch.x - offset_x
@@ -405,7 +380,7 @@ class KXReorderableBehavior:
                 touch_ud['kivyx_drag_ctx'].original_state,
                 ignore_parent=True)
             add_widget(spacer)
-            async with _rest_of_touch_events(self, touch) as on_touch_move:
+            async with ak.rest_of_touch_events(self, touch) as on_touch_move:
                 while True:
                     await on_touch_move()
                     x, y = touch.pos
