@@ -1,34 +1,20 @@
 # Draggable
 
+Drag & Drop functionality for Kivy widgets.
+
 ![](http://img.youtube.com/vi/CjiRZjiSqgA/0.jpg)  
-[Youtube][youtube]  
-[README(Japanese)](README_jp.md)  
-
-Inspired by:
-
-* [drag_n_drop][drag_n_drop] (`Draggable` is based on this, so reading its documentation may help you understand `Draggable`)
-* [Flutter][flutter]
-
-This flower adds a drag and drop functionality to layouts and widgets. There are 3
-main components used to have drag and drop:
-
-- The `KXDraggableBehavior`. An equivalent of drag_n_drop's
-  `DraggableObjectBehavior`.
-- The `KXReorderableBehavior`. An equivalent of drag_n_drop's
-  `DraggableLayoutBehavior`.
-- The `KXDroppableBehavior`. An equivalent of Flutter's `DragTarget`.
-
-From now on, I use the term `droppable` to refer both `KXReorderableBehavior` and `KXDroppableBehavior`, and use the term `draggable` to refer `KXDraggableBehavior`.
+* [Youtube][youtube] (Current APIs are drastically different from those shown in the videos)  
+* [README(Japanese)](https://github.com/kivy-garden/draggable/blob/main/README_jp.md)  
+* Inspired by [drag_n_drop][drag_n_drop] and Flutter's [Draggable][flutter]
 
 ## Installation
 
-Pin the minor version.
-
 ```
-pip install "kivy_garden.draggable>=0.3,<0.4"
+$ pip install "kivy-garden-draggable @ git+https://github.com/kivy-garden/draggable.git@v0.4"
 ```
 
-## Main differences from drag_n_drop
+## Usage
+
 
 - Drag is triggered by a long-press. More precisely, when a finger of the user
   dropped inside a draggable, if the finger stays for `draggable.drag_timeout`
@@ -73,21 +59,13 @@ stateDiagram-v2
     on_drag_end --> [*]
 ```
 
-**Important Change**
-
-Starting with version 0.3, an `on_drag_cancel` event can occur between `on_drag_fail` / `on_drag_succeed` and `on_drag_end` if their default handler is an async function.
-
 ## Cancellation
 
 When your app switches a scene, you may want to cancel all ongoing drags.
-`ongoing_drags()` and `draggable.drag_cancel()` are what you want.
 
 ```python
-from kivy_garden.draggable import ongoing_drags
-
-def cancel_all_ongoing_drags():
-    for draggable in ongoing_drags():
-        draggable.drag_cancel()
+from kivy_garden.draggable import cancel_active_drags
+cancel_active_drags()
 ```
 
 ## Using other widgets as an emitter
@@ -99,71 +77,15 @@ In this situation, a widget that triggers a drag and a widget that is dragged ar
 You can implement it as follows:
 
 ```python
-class Card(KXDraggableBehavior, Widget):
-    pass
-
+import asynckivy as ak
+from kivy_garden.draggable import perform_drag
 
 class Deck(Widget):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
-            Card(...).start_dragging_from_others_touch(self, touch)
+            card = Card(...)
+            ak.managed_start(perform_drag(card, touch))
 ```
-
-## Customization
-
-What draggables do `on_drag_succeed` / `on_drag_fail` / `on_drag_cancel` are completely customizable.
-For example, by default, when a drag fails, the draggable will go back to where it came from with little animation.
-This is because the default handler of `on_drag_fail` is implemented as follows:
-
-```python
-class KXDraggableBehavior:
-    async def on_drag_fail(self, touch, ctx):
-        await ak.anim_attrs(
-            self, duration=.1,
-            x=ctx.original_pos_win[0],
-            y=ctx.original_pos_win[1],
-        )
-        restore_widget_state(self, ctx.original_state)
-```
-
-If you don't need the animation, and want the draggable to go back instantly, overwrite the handler as follows:
-
-```python
-class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_fail(self, touch, ctx):
-        restore_widget_state(self, ctx.original_state)
-```
-
-Or if you want the draggable to not go back, and want it to stay the current position, overwrite the handler as follows:
-
-```python
-class MyDraggable(KXDraggableBehavior, Widget):
-    def on_drag_fail(self, touch, ctx):
-        pass
-```
-
-Another example: when a drag succeed, the draggable will become a child of droppable, by default.
-If you don't like it, and want the draggable to fade-out,
-overwrite the handler as follows:
-
-```python
-class MyDraggable(KXDraggableBehavior, Widget):
-    async def on_drag_succeed(self, touch, ctx):
-        import asynckivy
-        await asynckivy.anim_attrs(self, opacity=0)
-        self.parent.remove_widget(self)
-```
-
-Just like that, you have free rein to change those behaviors.
-But note that **only the default handler of `on_drag_succeed` and `on_drag_fail`
-can be an async function. Those two only.**
-
-You might say "What's the point of implementing a default handler as an async function,
-when you can just launch any number of async functions from a regular function by using ``asynckivy.managed_start()``?".
-Well, if you use ``asynckivy.managed_start()``, that task will run independently from the dragging process,
-which means the draggable might fire ``on_drag_end`` and might start another drag while the task is still running.
-If a default handler is an async function,
-its code will be a part of dragging process and is guaranteed to be finished before ``on_drag_end`` gets fired.
 
 ## License
 

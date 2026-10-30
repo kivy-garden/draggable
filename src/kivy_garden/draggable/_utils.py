@@ -1,10 +1,99 @@
 from copy import deepcopy
 
-import asynckivy as ak
+from kivy.uix.widget import Widget
+from kivy.input.motionevent import MotionEvent
+from kivy.base import EventLoop
+from kivy_garden.draggable._common import DragTags
 
 
-class temp_transform:
-    __slots__ = ('_touch', '_func')
+def noop(*args, **kwargs):
+    pass
+
+
+def is_colliding_and_not_wheel(w, t):
+    return w.collide_point(*t.pos) and (not t.is_mouse_scrolling)
+
+
+def get_active_drags() -> list[tuple[Widget, MotionEvent, DragTags]]:
+    '''
+    Returns a list of ``(dragged_widget, touch, drag_tags)`` tuples for all ongoing drags.
+    '''
+    result = []
+    for t in EventLoop.touches:
+        try:
+            ex_access = t.ud["kivyx_exclusive_access"]
+        except KeyError:
+            continue
+        if (not ex_access.has_been_claimed) or t.ud["kivyx_abandon"].is_fired:
+            continue
+        match ex_access.params:
+            case "drag_n_drop", dragged_widget, drag_tags, _:
+                result.append((dragged_widget, t, drag_tags))
+    return result
+
+
+def cancel_drag(touch):
+    '''
+    Cancels the ongoing drag associated with the given touch.
+    '''
+    try:
+        ex_access = touch.ud["kivyx_exclusive_access"]
+    except KeyError:
+        return
+    match ex_access.params:
+        case "drag_n_drop", *_:
+            touch.ud["kivyx_abandon"].fire()
+
+
+def cancel_active_drags():
+    '''
+    Cancels all ongoing drags.
+    '''
+    for t in EventLoop.touches:
+        try:
+            ex_access = t.ud["kivyx_exclusive_access"]
+        except KeyError:
+            continue
+        match ex_access.params:
+            case "drag_n_drop", *_:
+                t.ud["kivyx_abandon"].fire()
+
+
+_shallow_copyable_layout_property_names = (
+    "x", "y", "width", "height",
+    "size_hint_x", "size_hint_y",
+    "size_hint_min_x", "size_hint_min_y",
+    "size_hint_max_x", "size_hint_max_y",
+)
+
+
+def copy_layout_state(from_, to_):
+    '''
+    Copies the layout-related properties from one to another.
+
+    .. code-block::
+
+        to_.x = from_.x
+        to_.y = from_.y
+        to_.width = from_.width
+        ...
+        to_.pos_hint = deepcopy(from_.pos_hint)
+    '''
+    setattr_ = setattr
+    getattr_ = getattr
+    for name in _shallow_copyable_layout_property_names:
+        setattr_(to_, name, getattr_(from_, name))
+    setattr_(to_, "pos_hint", deepcopy(getattr_(from_, "pos_hint")))
+
+
+class transform_2d:
+    '''
+    .. code-block::
+
+        with transform_2d(touch, transform_func):
+            ...
+    '''
+    __slots__ = ("_touch", "_func")
 
     def __init__(self, touch, func):
         self._touch = touch
@@ -19,63 +108,22 @@ class temp_transform:
         self._touch.pop()
 
 
-_shallow_copyable_property_names = (
-    'x', 'y', 'width', 'height',
-    'size_hint_x', 'size_hint_y',
-    'size_hint_min_x', 'size_hint_min_y',
-    'size_hint_max_x', 'size_hint_max_y',
-)
+def find_child_at(children, x, y) -> Widget | None:
+    '''
+    Returns the child widget at the given position, or ``None`` if no child is found.
+    '''
+    for c in children:
+        if c.collide_point(x, y):
+            return c
+    return None
 
 
-def save_widget_state(widget, *, ignore_parent=False) -> dict:
-    w = widget.__self__
-    getattr_ = getattr
-    state = {name: getattr_(w, name) for name in _shallow_copyable_property_names}
-    state['pos_hint'] = deepcopy(w.pos_hint)
-    if ignore_parent:
-        return state
-    parent = w.parent
-    state['parent'] = parent
-    if parent is not None:
-        state['index'] = parent.children.index(w)
-    return state
-
-
-def restore_widget_state(widget, state: dict, *, ignore_parent=False):
-    w = widget.__self__
-    setattr_ = setattr
-    for name in _shallow_copyable_property_names:
-        setattr_(w, name, state[name])
-    w.pos_hint = deepcopy(state['pos_hint'])
-    if ignore_parent or 'parent' not in state:
-        return
-    if w.parent is not None:
-        w.parent.remove_widget(w)
-    parent = state['parent']
-    if parent is None:
-        return
-
-    # The 'Window.add_widget()' doesn't have the 'index' parameter so we need to check whether the 'parent' is Window
-    # or not. The way to do it here is unreliable, and might not work in the future.
-    if parent.parent is parent:
-        parent.add_widget(w)
-    else:
-        parent.add_widget(w, index=state['index'])
-
-
-def _create_spacer(**kwargs):
-    '''(internal)'''
-    from kivy.uix.widget import Widget
-    from kivy.utils import rgba
-    from kivy.graphics import Color, Rectangle
-    spacer = Widget(size_hint_min=('50dp', '50dp'))
-    with spacer.canvas:
-        color = kwargs.get('color', None)
-        if color is None:
-            Color(.2, .2, .2, .7)
-        else:
-            Color(*rgba(color))
-        rect_inst = Rectangle(size=spacer.size, pos=spacer.pos)
-    ak.sync_attr((spacer, "pos"), (rect_inst, "pos")).__enter__()
-    ak.sync_attr((spacer, "size"), (rect_inst, "size")).__enter__()
-    return spacer
+def find_child_with_index_at(children, x, y) -> tuple[Widget, int] | tuple[None, None]:
+    '''
+    Returns a tuple ``(widget, index)`` for the child widget at the given position,
+     or ``(None, None)`` if no child is found.
+    '''
+    for i, child in enumerate(children):
+        if child.collide_point(x, y):
+            return (child, i)
+    return (None, None)

@@ -14,10 +14,8 @@ drag操作によってwidgetを並び替えたいなら`KXReorderableBehavior`�
 
 ## Install方法
 
-minor versionまでを固定してください。
-
 ```
-pip install "kivy_garden.draggable>=0.3,<0.4"
+$ pip install "kivy-garden-draggable @ git+https://github.com/kivy-garden/draggable.git@v0.4"
 ```
 
 ## dragが始まる条件
